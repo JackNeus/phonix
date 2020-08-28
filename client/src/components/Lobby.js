@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import {Container, Row, Col, Button} from 'react-bootstrap';
 import socket from '../socket';
 
+import Game from "./Game";
+
 class Lobby extends Component {
 	constructor(props) {
 		super();
 		this.state = {gameId: props.gameId, players: []};
-		this.closeLobby = this.closeLobby.bind(this);
 		this.exitLobby = this.exitLobby.bind(this);
+		this.startGame = this.startGame.bind(this);
 	}
 
 	componentDidMount() {
@@ -38,16 +40,17 @@ class Lobby extends Component {
 		socket.off("playerUpdate");
 	}
 
-	closeLobby() {
-		socket.emit("endGame", this.state.gameId);
-		this.exitLobby();
-	}
-
 	exitLobby() {
+		if (this.state.isHost) socket.emit("endGame", this.state.gameId);
 		this.props.history.push("/");
 	}
 
+	startGame() {
+		socket.emit("startGame", this.state.gameId);
+	}
+
     render() {
+    	let leaveAction = this.state.isHost ? "Close" : "Exit";
     	let joinLink = `http://localhost:3000/${this.state.gameId}`;
         return (
 	        <Container>
@@ -55,11 +58,19 @@ class Lobby extends Component {
 			      <Col className="pane lobby-info" md="10">
 			      	Lobby: {this.state.gameId}&nbsp;
 			      	{this.state.isHost &&
-			      		<span>(Join link: <a target="_blank" href={joinLink}>{joinLink}</a>)</span>
+			      	<span>
+			      		(Join link: <a target="_blank" rel="noopener noreferrer" href={joinLink}>{joinLink}</a>)
+			      	</span>
 			      	}
 			      </Col>
 			      <Col className="">
-					<Button onClick={this.closeLobby}>Close Lobby</Button>
+			      	<Container>
+			      		<Row>
+			      			<Button onClick={this.exitLobby}>{leaveAction} Lobby</Button>
+			      		</Row>
+			      		{this.state.isHost &&
+			      		<Row><Button onClick={this.startGame}>Start Game</Button></Row>}
+			      	</Container>
 			      </Col>
 				</Row>
 				<Row>
@@ -69,7 +80,7 @@ class Lobby extends Component {
 					})}
 					</Col>
 					<Col className="pane light game-area">
-						GAME AREA
+						<Game gameId={this.state.gameId}/>
 					</Col>
 				</Row>
 			</Container>

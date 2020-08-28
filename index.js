@@ -28,6 +28,8 @@ const getHostedGame = function(uid) {
 	return undefined;
 };
 
+const TIMEOUT_GUESS = 5 * 1000;
+
 io.on('connection', (socket) => {
 	socket.on('setUsername', (username) => {
 		console.log("Setting username for session %s to %s.", socket.id, username);
@@ -53,7 +55,8 @@ io.on('connection', (socket) => {
 		gameCollection.gameList[gameId] = {
 			host: socket.uid,
 			open: true,
-			players: {}
+			players: {},
+			round: -1,
 		};
 		gameCollection.totalGameCount++;
 
@@ -129,4 +132,56 @@ io.on('connection', (socket) => {
 		// Broadcast new client joining to whole room.
 		io.to(gameId).emit("playerUpdate", {players: game.players});
 	}
+
+	socket.on('startGame', (gameId) => {
+		// Check to make sure user owns game.
+		let game = gameCollection.gameList[gameId];
+		if (!game || game && game.host != socket.uid) return;
+
+		// Game is already in progress!
+		if (game.round != -1) {
+			console.log(`${gameId} has already been started.`);
+			return;
+		}
+
+		game.round = 0;
+		game.phase = "GUESS";
+		game.guesses = [];
+
+		let sounds = ['apple', 'banana', 'pear'];
+
+		io.to(gameId).emit("gameUpdate", {
+			round: game.round,
+			phase: game.phase,
+			sound: sounds[game.round]
+		})
+		// Wait for TIMEOUT_GUESS seconds and then advance game.
+		setTimeout(() => {
+			game.phase = "VOTE";
+			io.to(gameId).emit("gameUpdate", {
+				round: game.round,
+				phase: game.phase,
+				sound: sounds[game.round],
+				guesses: game.guesses
+			});
+		}, TIMEOUT_GUESS);
+	})
+
+	socket.on('sendGuess', (data) => {
+		console.log(`Received guess from ${socket.username}`);
+		let gameId = data.gameId;
+		let round = data.round;
+		let guess = data.guess;
+
+		let game = gameCollection.gameList[gameId];
+		// Return if game does not exist or guess is invalid/late.
+		if (!game || game.round < 0 || game.round != round || game.phase != "GUESS") return;
+		
+		// Add guess to game.
+		game.guesses.push({
+			uid: socket.uid,
+			username: socket.username,
+			guess: guess
+		});
+	})
 });
