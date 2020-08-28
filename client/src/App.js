@@ -10,7 +10,8 @@ function App() {
     <Router>
       <div className="App">
         <Route exact path="/" component={Landing} />
-        <Route exact path="/:gameId"
+        <Route exact path="/:joinId" component={(props) => (<Landing joinId={props.match.params.joinId} {...props}/>)} />
+        <Route exact path="/lobby/:gameId"
           component={(props) => (<Lobby gameId={props.match.params.gameId} {...props}/>)} />
       </div>
     </Router>

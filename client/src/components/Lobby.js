@@ -36,11 +36,16 @@ class Lobby extends Component {
 	}
 
     render() {
+    	let joinLink = `http://localhost:3000/${this.state.gameId}`;
         return (
         	<div>
 		      <p>Lobby: {this.state.gameId}</p>
 		      {this.state.isHost &&
-		      	<button onClick={this.closeLobby}>Close Lobby</button>}
+		      	<React.Fragment>
+		      		<p>Join link: <a href={joinLink}>{joinLink}</a></p>
+		      		<button onClick={this.closeLobby}>Close Lobby</button>
+		      	</React.Fragment>
+		      }
 			</div>
         )
     }

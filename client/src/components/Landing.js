@@ -8,13 +8,17 @@ const getRandomName = () => {
 const defaultUsername = getRandomName();
 
 class Landing extends Component {
-	constructor() {
+	constructor(props) {
 		super();
-		this.state = {username: defaultUsername};
+		this.state = {};
+		this.state.username = defaultUsername;
+		this.state.joinId = props.joinId ? props.joinId : "";
+		console.log(this.state);
 
 		this.handleChange = this.handleChange.bind(this);
 		this.setUsername = this.setUsername.bind(this);
 		this.handleCreateGame = this.handleCreateGame.bind(this);
+		this.handleJoinGame = this.handleJoinGame.bind(this);
 	}
 
 	componentDidMount() {
@@ -34,8 +38,13 @@ class Landing extends Component {
 		socket.emit('makeGame', (gameId) => {
 			// TODO: don't redirect just yet, as doing so 
 			// makes things like the 'back button' wonky
-			this.props.history.push(`/${gameId}`);
+			this.props.history.push(`/lobby/${gameId}`);
 		});
+	}
+
+	handleJoinGame() {
+		this.setUsername();
+		this.props.history.push(`/lobby/${this.state.joinId}`);
 	}
 
     render() {
@@ -50,10 +59,17 @@ class Landing extends Component {
 					onChange={this.handleChange}
 					onBlur={this.setUsername} />
 				</div>
+				<br />
 				<div className='GameButtons'>
 					<button className='createGame'
 						placeholder="Create Game"
-						onClick={this.handleCreateGame}>CreateGame</button>
+						onClick={this.handleCreateGame}>Create Game</button>
+					{this.state.joinId && <div>
+						<input value={this.state.joinId} readOnly/>
+						<button className='joinGame'
+							placeholder="Join Game"
+							onClick={this.handleJoinGame}>Join Game</button>
+					</div>}
 				</div>
 			</div>
         )
