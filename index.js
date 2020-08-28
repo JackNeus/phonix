@@ -54,7 +54,8 @@ io.on('connection', (socket) => {
 		gameCollection.gameList[gameId] = {
 			// TODO: Allow for duplicate usernames (currently used as uid)
 			host: socket.username,
-			open: true
+			open: true,
+			players: new Set()
 		};
 		gameCollection.totalGameCount++;
 
@@ -66,8 +67,8 @@ io.on('connection', (socket) => {
 		delete gameCollection.gameList[gameId];
 	}
 
-	// When a client disconnects, end any games they are hosting.
 	socket.on('disconnect', () => {
+		// When a client disconnects, end any games they are hosting (there should be at most one).
 		for (var gameId in gameCollection.gameList) {
 			if (gameCollection.gameList[gameId].host == socket.username) {
 				console.log(`Host left ${gameId}`);
@@ -88,14 +89,22 @@ io.on('connection', (socket) => {
 	socket.on('joinGame', (gameId) => {
 		console.log(`${socket.id} attempting to join ${gameId}`);
 		console.log(gameCollection);
-		if (gameCollection.gameList[gameId] == undefined) {
+		let game = gameCollection.gameList[gameId];
+		if (game == undefined) {
 			console.log(`...but ${gameId} does not exist`);
 			socket.emit("joinFailure", `${gameId} does not exist`);
 		} else {
-			let game = gameCollection.gameList[gameId];
 			console.log("success!");
+			game.players.add({username: socket.username});
+			// Join lobby channel.
 			socket.join(gameId);
-			socket.emit("joinSuccess", {isHost: socket.username == game.host});
+			// Send client a success message.
+			let playerList = Array.from(game.players);
+			// TODO: Probably should just pass full game state in the future
+			socket.emit("joinSuccess",
+				{isHost: socket.username == game.host, players: playerList});
+			// Broadcast new client joining to whole room.
+			socket.to(gameId).emit("playerUpdate", {players: playerList});
 		}
 	});
 });
