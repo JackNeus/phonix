@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Container, Row, Col, Button} from 'react-bootstrap';
 import socket from '../socket';
 
 class Lobby extends Component {
@@ -49,22 +50,29 @@ class Lobby extends Component {
     render() {
     	let joinLink = `http://localhost:3000/${this.state.gameId}`;
         return (
-	        <div>
-	        	<div>
-			      <p>Lobby: {this.state.gameId}</p>
-			      {this.state.isHost &&
-			      	<React.Fragment>
-			      		<p>Join link: <a href={joinLink}>{joinLink}</a></p>
-			      		<button onClick={this.closeLobby}>Close Lobby</button>
-			      	</React.Fragment>
-			      }
-				</div>
-				<p>
-				{Object.keys(this.state.players).map((id) => {
-					return (<span key={id}>{this.state.players[id].username}<br /></span>)
-				})}
-				</p>
-			</div>
+	        <Container>
+	        	<Row className="justify-content-center">
+			      <Col className="pane lobby-info" md="10">
+			      	Lobby: {this.state.gameId}&nbsp;
+			      	{this.state.isHost &&
+			      		<span>(Join link: <a target="_blank" href={joinLink}>{joinLink}</a>)</span>
+			      	}
+			      </Col>
+			      <Col className="">
+					<Button onClick={this.closeLobby}>Close Lobby</Button>
+			      </Col>
+				</Row>
+				<Row>
+					<Col className="pane" md="3">
+					{Object.keys(this.state.players).map((id) => {
+						return (<span key={id}>{this.state.players[id].username}<br /></span>)
+					})}
+					</Col>
+					<Col className="pane light game-area">
+						GAME AREA
+					</Col>
+				</Row>
+			</Container>
         )
     }
 }

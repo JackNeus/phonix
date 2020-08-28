@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {Container, Row, Col, Button} from 'react-bootstrap';
 import socket from '../socket';
 
 const names = ["Craig", "Jeffrey", "Klaus", "Velma", "Oscar", "Thomas", "Lizzy"];
@@ -47,29 +48,29 @@ class Landing extends Component {
 
     render() {
         return (
-        	<div>
-		      <div className="form">
-				<h3 className="title">What's your nickname?</h3>
-				<input className="usernameInput" type="text" 
-					maxLength="14"
-					name="username"
-					value={this.state.username} 
-					onChange={this.handleChange}
-					onBlur={this.setUsername} />
-				</div>
-				<br />
-				<div className='GameButtons'>
-					<button className='createGame'
+        	<Container>
+		      	<Row className="nickname-pane pane solid justify-content-center">
+					<Col xs="auto">
+						What's your name?&nbsp;
+						<input className="usernameInput" type="text" 
+							maxLength="14"
+							name="username"
+							value={this.state.username} 
+							onChange={this.handleChange}
+							onBlur={this.setUsername} />
+					</Col>
+				</Row>
+				<Row className='game-buttons justify-content-center'>
+					<Button className='createGame'
 						placeholder="Create Game"
-						onClick={this.handleCreateGame}>Create Game</button>
+						onClick={this.handleCreateGame}>Create Game</Button>
 					{this.state.joinId && <div>
-						<input value={this.state.joinId} readOnly/>
-						<button className='joinGame'
+						<Button className='joinGame'
 							placeholder="Join Game"
-							onClick={this.handleJoinGame}>Join Game</button>
+							onClick={this.handleJoinGame}>Join Game {this.state.joinId}</Button>
 					</div>}
-				</div>
-			</div>
+				</Row>
+			</Container>
         )
     }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route} from "react-router-dom";
-import './App.css';
+
+import './App.scss';
 
 import Landing from "./components/Landing";
 import Lobby from "./components/Lobby";

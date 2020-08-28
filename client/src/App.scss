@@ -1,0 +1,59 @@
+@import "~bootstrap/scss/bootstrap";
+
+// Plette from https://flatuicolors.com/palette/defo
+$foreground: #3498db;
+$border-color: #2980b9;
+$midground: #85b7e9;
+
+$foreground-light: #bdc3c7;
+$border-color-light: #95a5a6;
+
+$background: #ecf0f1;
+
+body {
+	background-color: $background;
+	.row {
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
+	.pane {
+		background-color: $foreground;
+		border: 3px solid $border-color;
+		border-radius: 10px;
+
+		&.light {
+			background-color: $foreground-light;
+			border-color: $border-color-light
+		}
+
+		padding: 25px;
+		margin-right: 0.25em;
+		margin-left: 0.25em;
+
+		&.nickname-pane {
+			input {
+				border: hidden;
+				border-radius: 5px;
+				background-color: $midground;
+			}
+		}
+
+		&.lobby-info {
+			text-align: center;
+		}
+
+		a {
+			color: $background;
+			font-weight: bold;
+		}
+	}
+	.game-buttons {
+		button {
+			margin-left: 1em;
+			margin-right: 1em;
+		}
+	}
+	.game-area {
+		min-height: 500px;
+	}
+}
