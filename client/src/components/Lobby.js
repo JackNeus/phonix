@@ -13,8 +13,8 @@ class Lobby extends Component {
 		socket.emit("joinGame", this.state.gameId);
 
 		socket.on("joinSuccess", (data) => {
-			console.log(data);
-			this.setState({isHost: data.isHost, players: data.players});
+			console.log(data.gameId);
+			this.setState({isHost: data.isHost});
 		})
 
 		socket.on("joinFailure", (err) => {
@@ -28,10 +28,13 @@ class Lobby extends Component {
 		})
 
 		socket.on("playerUpdate", (data) => {
-			console.log("Player update!");
-			console.log(data);
 			this.setState({players: data.players});
 		})
+	}
+
+	componentWillUnmount() {
+		socket.off("joinSuccess");
+		socket.off("playerUpdate");
 	}
 
 	closeLobby() {
@@ -55,11 +58,11 @@ class Lobby extends Component {
 			      	</React.Fragment>
 			      }
 				</div>
-				<ul>
-				{this.state.players.map((player) => {
-					return (<li>{player.username}</li>)
+				<p>
+				{Object.keys(this.state.players).map((id) => {
+					return (<span key={id}>{this.state.players[id].username}<br /></span>)
 				})}
-				</ul>
+				</p>
 			</div>
         )
     }

@@ -13,7 +13,6 @@ class Landing extends Component {
 		this.state = {};
 		this.state.username = defaultUsername;
 		this.state.joinId = props.joinId ? props.joinId : "";
-		console.log(this.state);
 
 		this.handleChange = this.handleChange.bind(this);
 		this.setUsername = this.setUsername.bind(this);
@@ -26,7 +25,6 @@ class Landing extends Component {
 	}
 
 	handleChange(e) {
-		console.log(e.target);	
 		this.setState({[e.target.name] : [e.target.value]});
 	}
 
