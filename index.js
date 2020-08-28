@@ -20,11 +20,13 @@ io.on('connection', (socket) => {
 		socket.username = username;
 	});
 
-	socket.on('makeGame', () => {
+	socket.on('makeGame', (ack) => {
 		console.log("Making game...");
 		
 		var gameId = (Math.random()+1).toString(36).slice(2, 18);
      	console.log("Game Created by "+ socket.username + " w/ " + gameId);
 		console.log(socket.id);
+
+		ack(gameId);
 	});
 });
