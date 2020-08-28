@@ -11,7 +11,7 @@ function App() {
       <div className="App">
         <Route exact path="/" component={Landing} />
         <Route exact path="/:gameId"
-          component={(props) => (<Lobby gameId={props.match.params.gameId} />)} />
+          component={(props) => (<Lobby gameId={props.match.params.gameId} {...props}/>)} />
       </div>
     </Router>
   );

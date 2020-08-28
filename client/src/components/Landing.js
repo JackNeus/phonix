@@ -32,6 +32,8 @@ class Landing extends Component {
 
 	handleCreateGame(e) {
 		socket.emit('makeGame', (gameId) => {
+			// TODO: don't redirect just yet, as doing so 
+			// makes things like the 'back button' wonky
 			this.props.history.push(`/${gameId}`);
 		});
 	}
