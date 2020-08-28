@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('joinGame', (gameId) => {
-		console.log(`${socket.id} attempting to join ${gameId}`);
+		console.log(`${socket.username} (${socket.uid}) attempting to join ${gameId}`);
 		let game = gameCollection.gameList[gameId];
 		if (game == undefined) {
 			console.log(`...but ${gameId} does not exist`);
@@ -109,6 +109,11 @@ io.on('connection', (socket) => {
 		// When a client disconnects, leave any games they are in.
 		leaveGames();
 	});
+
+	socket.on("leaveGame", () => {
+		console.log(`${socket.username} (${socket.uid}) left game.`);
+		leaveGames();
+	})
 
 	socket.on('endGame', (gameId) => {
 		// Check to make sure user owns game.

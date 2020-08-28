@@ -13,7 +13,6 @@ class Lobby extends Component {
 		socket.emit("joinGame", this.state.gameId);
 
 		socket.on("joinSuccess", (data) => {
-			console.log(data.gameId);
 			this.setState({isHost: data.isHost});
 		})
 
@@ -33,12 +32,14 @@ class Lobby extends Component {
 	}
 
 	componentWillUnmount() {
+		socket.emit("leaveGame");
 		socket.off("joinSuccess");
 		socket.off("playerUpdate");
 	}
 
 	closeLobby() {
 		socket.emit("endGame", this.state.gameId);
+		this.exitLobby();
 	}
 
 	exitLobby() {
