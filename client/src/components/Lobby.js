@@ -41,6 +41,8 @@ class Lobby extends Component {
 	componentWillUnmount() {
 		socket.emit("leaveGame");
 		socket.off("joinSuccess");
+		socket.off("joinFailure");
+		socket.off("gameEnded");
 		socket.off("playerUpdate");
 	}
 
@@ -90,9 +92,17 @@ class Lobby extends Component {
 				</Row>
 				<Row className="page-elt">
 					<Col className="pane" md="3">
-					{Object.keys(this.state.players).map((id) => {
-						return (<span key={id}>{this.state.players[id].username}<br /></span>)
-					})}
+						<Container>
+						{Object.keys(this.state.players).map((id) => {
+							return (
+								<div key={id} className="player-info">
+									{this.state.players[id].username}
+									{this.state.gameStarted &&
+										<div className="player-score float-right">{this.state.players[id].score}</div>}
+								</div>
+							)
+						})}
+						</Container>
 					</Col>
 					<Col className="pane light game-area">
 						{this.state.gameStarted && <Game gameId={this.state.gameId}/>}

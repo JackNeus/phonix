@@ -49,7 +49,7 @@ class Game extends Component {
 				round: this.state.round,
 				guess: e.target.value
 			})
-			this.setState({guessed: true});
+			this.setState({guess: e.target.value});
 		}
 	}
 
@@ -62,7 +62,7 @@ class Game extends Component {
 		socket.emit("sendVote", {
 			gameId: this.state.gameId,
 			round: this.state.round,
-			vote: guess.uid
+			vote: guess.guess
 		});
 	}
 
@@ -76,8 +76,8 @@ class Game extends Component {
 			gamePane = (
 			<div>
 				Your guess: <input type="text" 
-					disabled = {this.state.guess}
-					onKeyDown = {this.handleSubmitGuess} />
+					disabled={this.state.guess != false}
+					onKeyDown={this.handleSubmitGuess} />
 			</div>);
 		} else if (inVotePhase || inResultsPhase) {
 			gamePane = (

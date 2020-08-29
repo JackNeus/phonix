@@ -29,25 +29,34 @@ body {
 		padding: 25px;
 		margin-right: 0.25em;
 		margin-left: 0.25em;
+	}
 
-		&.nickname-pane {
-			input {
-				border: hidden;
-				border-radius: 5px;
-				background-color: $midground;
-			}
+	.nickname-pane {
+		input {
+			border: hidden;
+			border-radius: 5px;
+			background-color: $midground;
 		}
+	}
 
-		&.lobby-info {
-			text-align: center;
-			height: 7em;
-		}
+	.lobby-info {
+		text-align: center;
+		height: 7em;
 
 		a {
 			color: $background;
 			font-weight: bold;
 		}
 	}
+
+	.player-info {
+		font-size: 1.2em;
+
+		.player-score {
+			font-weight: bold;
+		}
+	}
+
 	.lobby-buttons {
 		button {
 			margin-left: 1em;
@@ -63,6 +72,11 @@ body {
 	.game-area {
 		min-height: 500px;
 
+		input {
+			border: hidden;
+			border-radius: 5px;
+		}
+
 		.game-info {
 			font-size: 1em;
 			font-weight: bold;
@@ -72,8 +86,6 @@ body {
 		}
 
 		.vote-table {
-			border: 1px solid black;
-
 			.voted {
 				border: 1px solid red;
 			}

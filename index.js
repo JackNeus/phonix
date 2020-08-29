@@ -33,6 +33,10 @@ const TIMEOUT_VOTE = 5;
 const TIMEOUT_RESULTS = 5;
 const ROUND_COUNT = 3;
 
+const POINTS_CORRECT_GUESS = 3;
+const POINTS_CORRECT_VOTE = 1;
+const POINTS_GOT_VOTE = 1;
+
 io.on('connection', (socket) => {
 	socket.on('setUsername', (username) => {
 		console.log("Setting username for session %s to %s.", socket.id, username);
@@ -74,7 +78,10 @@ io.on('connection', (socket) => {
 			socket.emit("joinFailure", `${gameId} does not exist`);
 		} else {
 			console.log("...success!");
-			game.players[socket.uid] = {username: socket.username};
+			game.players[socket.uid] = {
+				username: socket.username,
+				score: 0
+			};
 			// Join lobby channel.
 			socket.join(gameId);
 			// Send client a success message.
@@ -116,6 +123,8 @@ io.on('connection', (socket) => {
 		leaveGames();
 	});
 
+	// TODO: .on("reconnect")?
+
 	socket.on("leaveGame", () => {
 		console.log(`${socket.username} (${socket.uid}) left game.`);
 		leaveGames();
@@ -134,6 +143,10 @@ io.on('connection', (socket) => {
 		let game = gameCollection.gameList[gameId];
 		// Broadcast new client joining to whole room.
 		io.to(gameId).emit("playerUpdate", {players: game.players});
+	}
+
+	var guessesMatch = (a, b) => {
+		return a === b;
 	}
 
 	socket.on('startGame', (gameId) => {
@@ -169,7 +182,7 @@ io.on('connection', (socket) => {
 			io.to(gameId).emit("gameUpdate", {
 				round: game.round,
 				phase: game.phase,
-				sound: sounds[game.round],
+				sound: sounds[game.round-1],
 				guesses: game.guesses,
 				time: TIMEOUT_VOTE,
 			});
@@ -184,10 +197,32 @@ io.on('connection', (socket) => {
 				io.to(gameId).emit("gameUpdate", {
 					round: game.round,
 					phase: game.phase,
-					sound: sounds[game.round],
+					sound: sounds[game.round-1],
 					guesses: game.guesses,
 					time: TIMEOUT_RESULTS
 			});
+
+			// Scoring logic!
+			let sound = sounds[game.round-1];
+			let correctAnswer = sound;
+			let guesses = game.guesses;
+			for (let i = 0; i < guesses.length; i++) {
+				// Player's guess was straight up correct.
+				if (guessesMatch(guesses[i].guess, correctAnswer)) {
+					game.players[guesses[i].uid].score += POINTS_CORRECT_GUESS;
+				}
+				// Player awarded points if other players vote for their guess.
+				game.players[guesses[i].uid].score += guesses[i].votes * POINTS_GOT_VOTE;
+			}
+
+			for (let i = 0; i < game.players.length; i++) {
+				// Player voted for correct guess.
+				if (guessesMatch(game.players[i].guess, correctAnswer)) {
+					game.players[i].score += POINTS_CORRECT_VOTE;
+				}
+			}
+
+			sendPlayerUpdate(gameId);
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
 			setTimeout(() => {
@@ -226,23 +261,19 @@ io.on('connection', (socket) => {
 		console.log(`Received vote from ${socket.username}`);
 		let gameId = data.gameId;
 		let round = data.round;
-		let vote = data.uid;
+		let vote = data.vote;
 
 		let game = gameCollection.gameList[gameId];
 		// Return if game does not exist or guess is invalid/late.
 		if (!game || game.round < 0 || game.round != round || game.phase != "VOTE") return;
 		
 		// Get word that user guessed for.
-		let voteWord;
-		for (let i = 0; i < game.guesses.length; i++) {
-			if (game.guesses[i].uid == vote) {
-				voteWord = game.guesses[i].guess;
-			}
-		}
+		let voteWord = vote;
 		// Add a vote to all guesses with that word (there could be multiple).
 		for (let i = 0; i < game.guesses.length; i++) {
-			if (game.guesses[i].guess == voteWord) {
+			if (game.guesses[i].guess === voteWord) {
 				game.guesses[i].votes++;
+				game.players[socket.uid].guess = game.guesses[i].guess;
 			}
 		}
 	})
