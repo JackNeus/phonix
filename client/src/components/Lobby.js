@@ -7,7 +7,11 @@ import Game from "./Game";
 class Lobby extends Component {
 	constructor(props) {
 		super();
-		this.state = {gameId: props.gameId, players: []};
+		this.state = {
+			gameId: props.gameId,
+			players: [],
+			gameStarted: false
+		};
 		this.exitLobby = this.exitLobby.bind(this);
 		this.startGame = this.startGame.bind(this);
 	}
@@ -46,11 +50,19 @@ class Lobby extends Component {
 	}
 
 	startGame() {
+		this.setState({
+			gameStarted: true
+		});
 		socket.emit("startGame", this.state.gameId);
 	}
 
     render() {
-    	let leaveAction = this.state.isHost ? "Close" : "Exit";
+    	let leaveAction;
+    	if (this.state.gameStarted) {
+    		leaveAction = "End Game";
+    	} else {
+    		leaveAction = this.state.isHost ? "Close Lobby" : "Exit Lobby";
+    	}
     	let joinLink = `http://localhost:3000/${this.state.gameId}`;
         return (
 	        <Container>
@@ -66,9 +78,9 @@ class Lobby extends Component {
 			      <Col className="">
 			      	<Container>
 			      		<Row>
-			      			<Button onClick={this.exitLobby}>{leaveAction} Lobby</Button>
+			      			<Button onClick={this.exitLobby}>{leaveAction}</Button>
 			      		</Row>
-			      		{this.state.isHost &&
+			      		{this.state.isHost && !this.state.gameStarted &&
 			      		<Row><Button onClick={this.startGame}>Start Game</Button></Row>}
 			      	</Container>
 			      </Col>

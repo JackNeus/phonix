@@ -55,5 +55,17 @@ body {
 	}
 	.game-area {
 		min-height: 500px;
+
+		.vote-table {
+			border: 1px solid black;
+
+			.voted {
+				border: 1px solid red;
+			}
+
+			.vote-count {
+				float: right;
+			}
+		}
 	}
 }
