@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Container, Row, Col, Button, Table} from 'react-bootstrap';
+import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
 
 class Game extends Component {
@@ -20,6 +21,7 @@ class Game extends Component {
 				round: data.round,
 				phase: data.phase,
 				sound: data.sound,
+				time: data.time,
 				guesses: [
 					{uid: 1, guess: "apple", votes: 10},
 					{uid: 2, guess: "banana", votes: 2},
@@ -99,7 +101,24 @@ class Game extends Component {
 
 		return (
 			<Container>
-				<Row>round: {this.state.round}</Row>
+				<Row className="game-info">
+					<Col>Round: {this.state.round}</Col>
+					{this.state.time > 0 &&
+					<Col>
+						<div className="timer">
+						<CountdownCircleTimer
+							key={this.state.phase}
+							isPlaying
+							size={35}
+							strokeWidth={5}
+							strokeCap="square"
+							colors={[["#3498db"]]}
+							duration={this.state.time}>
+							{({r}) => r}
+						</CountdownCircleTimer>
+						</div>
+					</Col>}
+				</Row>
 				<Row>sound: {this.state.sound}</Row>
 				{gamePane}
 			</Container>

@@ -49,7 +49,7 @@ class Landing extends Component {
     render() {
         return (
         	<Container>
-		      	<Row className="nickname-pane pane solid justify-content-center">
+		      	<Row className="page-elt pane nickname-pane solid justify-content-center">
 					<Col xs="auto">
 						What's your name?&nbsp;
 						<input className="usernameInput" type="text" 
@@ -60,7 +60,7 @@ class Landing extends Component {
 							onBlur={this.setUsername} />
 					</Col>
 				</Row>
-				<Row className='game-buttons justify-content-center'>
+				<Row className='page-elt lobby-buttons justify-content-center'>
 					<Button className='createGame'
 						placeholder="Create Game"
 						onClick={this.handleCreateGame}>Create Game</Button>

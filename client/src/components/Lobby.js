@@ -66,16 +66,19 @@ class Lobby extends Component {
     	let joinLink = `http://localhost:3000/${this.state.gameId}`;
         return (
 	        <Container>
-	        	<Row className="justify-content-center">
+	        	<Row className="page-elt justify-content-center">
 			      <Col className="pane lobby-info" md="10">
+			      	<span className="align-middle">
 			      	Lobby: {this.state.gameId}&nbsp;
+			      	<br />
 			      	{this.state.isHost &&
 			      	<span>
 			      		(Join link: <a target="_blank" rel="noopener noreferrer" href={joinLink}>{joinLink}</a>)
 			      	</span>
 			      	}
+			      	</span>
 			      </Col>
-			      <Col className="">
+			      <Col className="action-buttons">
 			      	<Container>
 			      		<Row>
 			      			<Button onClick={this.exitLobby}>{leaveAction}</Button>
@@ -85,14 +88,14 @@ class Lobby extends Component {
 			      	</Container>
 			      </Col>
 				</Row>
-				<Row>
+				<Row className="page-elt">
 					<Col className="pane" md="3">
 					{Object.keys(this.state.players).map((id) => {
 						return (<span key={id}>{this.state.players[id].username}<br /></span>)
 					})}
 					</Col>
 					<Col className="pane light game-area">
-						<Game gameId={this.state.gameId}/>
+						{this.state.gameStarted && <Game gameId={this.state.gameId}/>}
 					</Col>
 				</Row>
 			</Container>

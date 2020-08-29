@@ -28,9 +28,9 @@ const getHostedGame = function(uid) {
 	return undefined;
 };
 
-const TIMEOUT_GUESS = 5 * 1000;
-const TIMEOUT_VOTE = 5 * 1000;
-const TIMEOUT_RESULTS = 5 * 1000;
+const TIMEOUT_GUESS = 5;
+const TIMEOUT_VOTE = 5;
+const TIMEOUT_RESULTS = 5;
 const ROUND_COUNT = 3;
 
 io.on('connection', (socket) => {
@@ -155,13 +155,14 @@ io.on('connection', (socket) => {
 			io.to(gameId).emit("gameUpdate", {
 				round: game.round,
 				phase: game.phase,
-				sound: sounds[game.round-1]
+				sound: sounds[game.round-1],
+				time: TIMEOUT_GUESS,
 			});
 
 			// Wait for TIMEOUT_GUESS seconds and then advance game.
 			setTimeout(() => {
 				votePhase();
-			}, TIMEOUT_GUESS);
+			}, TIMEOUT_GUESS * 1000);
 		}
 		var votePhase = () => {
 			game.phase = "VOTE";
@@ -169,13 +170,14 @@ io.on('connection', (socket) => {
 				round: game.round,
 				phase: game.phase,
 				sound: sounds[game.round],
-				guesses: game.guesses
+				guesses: game.guesses,
+				time: TIMEOUT_VOTE,
 			});
 
 			// Wait for TIMEOUT_VOTE seconds and then advance game.
 			setTimeout(() => {
 				resultsPhase();
-			}, TIMEOUT_VOTE);
+			}, TIMEOUT_VOTE * 1000);
 		}
 		var resultsPhase = () => {
 			game.phase = "RESULTS";
@@ -183,7 +185,8 @@ io.on('connection', (socket) => {
 					round: game.round,
 					phase: game.phase,
 					sound: sounds[game.round],
-					guesses: game.guesses
+					guesses: game.guesses,
+					time: TIMEOUT_RESULTS
 			});
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
@@ -191,7 +194,7 @@ io.on('connection', (socket) => {
 				if (game.round == ROUND_COUNT) return;
 				game.round++;
 				guessPhase();
-			}, TIMEOUT_RESULTS);
+			}, TIMEOUT_RESULTS * 1000);
 		}
 
 		// Start game!

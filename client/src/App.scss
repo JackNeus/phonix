@@ -12,7 +12,7 @@ $background: #ecf0f1;
 
 body {
 	background-color: $background;
-	.row {
+	.page-elt {
 		margin-top: 1em;
 		margin-bottom: 1em;
 	}
@@ -40,6 +40,7 @@ body {
 
 		&.lobby-info {
 			text-align: center;
+			height: 7em;
 		}
 
 		a {
@@ -47,14 +48,28 @@ body {
 			font-weight: bold;
 		}
 	}
-	.game-buttons {
+	.lobby-buttons {
 		button {
 			margin-left: 1em;
 			margin-right: 1em;
 		}
 	}
+	.action-buttons {
+		padding-top: 0.5em;
+		button {
+			margin-bottom: 1em;
+		}
+	}
 	.game-area {
 		min-height: 500px;
+
+		.game-info {
+			font-size: 1em;
+			font-weight: bold;
+			.timer {
+				float: right;
+			}
+		}
 
 		.vote-table {
 			border: 1px solid black;
