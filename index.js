@@ -28,9 +28,9 @@ const getHostedGame = function(uid) {
 	return undefined;
 };
 
-const TIMEOUT_GUESS = 10;
-const TIMEOUT_VOTE = 10;
-const TIMEOUT_RESULTS = 10;
+const TIMEOUT_GUESS = 1;
+const TIMEOUT_VOTE = 1;
+const TIMEOUT_RESULTS = 1;
 const ROUND_COUNT = 3;
 
 const POINTS_CORRECT_GUESS = 3;
@@ -162,7 +162,7 @@ io.on('connection', (socket) => {
 
 		let maxScore = -1;
 		for (let uid in game.players) {
-			maxScore = max(maxScore, game.players[uid].score);
+			maxScore = Math.max(maxScore, game.players[uid].score);
 		}
 		let winners = [];
 		for (let uid in game.players) {
@@ -259,17 +259,19 @@ io.on('connection', (socket) => {
 				// Game is over.
 				if (game.round == ROUND_COUNT) {
 					// TODO: this whole bit is clunky and can be done client-side
-					// TODO: though clunky, this actually doesn't work at all
 					winners = findWinners(gameId);
-					for (let uid in winners) {
-						game.players[uid].winner = true;
+					for (let i in winners) {
+						game.players[winners[i]].winner = true;
 					}
 					sendPlayerUpdate(gameId);
 					io.to(gameId).emit("gameFinished");
 
 					// Reset game
 					game.round = 0;
-					for (let uid in game.players) game.players[uid].score = 0;
+					for (let uid in game.players) {
+						game.players[uid].winner = false;
+						game.players[uid].score = 0;
+					}
 					return;
 				}
 				// Advance round.

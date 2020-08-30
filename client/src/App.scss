@@ -61,6 +61,11 @@ body {
 				color: $green;
 			}
 		}
+
+		&.winner {
+			font-weight: bold;
+			color: $red;
+		}
 	}
 
 	.lobby-buttons {

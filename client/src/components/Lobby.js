@@ -116,10 +116,10 @@ class Lobby extends Component {
 						<Container>
 						{this.state.players.map((player) => {
 							return (
-								<div key={player.uid} className="player-info">
+								<div key={player.uid} className={`player-info  ${player.winner ? "winner" : ""}`}>
 									{player.username}
 									{this.state.gamePlayed &&
-									<div className={`player-score float-right ${player.winner ? "winner" : ""}`}>
+									<div className="player-score float-right">
 										{player.score}
 									</div>}
 								</div>
