@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Container, Row, Col, Button, Table} from 'react-bootstrap';
+import {Container, Row, Col, Table} from 'react-bootstrap';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
 
@@ -22,11 +22,7 @@ class Game extends Component {
 				phase: data.phase,
 				sound: data.sound,
 				time: data.time,
-				guesses: [
-					{uid: 1, guess: "apple", votes: 10},
-					{uid: 2, guess: "banana", votes: 2},
-					{uid: 3, guess: "pear", votes: 3},
-					{uid: 4, guess: "orange", votes: 0}]//data.guesses
+				guesses: data.guesses
 			});
 			if (data.phase === "GUESS") {
 				this.setState({
@@ -34,7 +30,6 @@ class Game extends Component {
 					vote: null,
 				});
 			}
-			console.log(data);
 		})
 	}
 
@@ -56,7 +51,7 @@ class Game extends Component {
 	handleSendVote(guess) {
 		console.log("Vote attempted.");
 		// It is not time to vote or user already voted.
-		if (this.state.phase != "VOTE" || this.state.vote) return;
+		if (this.state.phase !== "VOTE" || this.state.vote) return;
 		console.log("Voted for ", guess);
 		this.setState({vote: guess.uid});
 		socket.emit("sendVote", {
@@ -76,7 +71,7 @@ class Game extends Component {
 			gamePane = (
 			<div>
 				Your guess: <input type="text" 
-					disabled={this.state.guess != false}
+					disabled={this.state.guess !== false}
 					onKeyDown={this.handleSubmitGuess} />
 			</div>);
 		} else if (inVotePhase || inResultsPhase) {

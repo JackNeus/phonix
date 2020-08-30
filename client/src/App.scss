@@ -10,6 +10,8 @@ $border-color-light: #95a5a6;
 
 $background: #ecf0f1;
 
+$green: #27ae60;
+
 body {
 	background-color: $background;
 	.page-elt {
@@ -54,6 +56,10 @@ body {
 
 		.player-score {
 			font-weight: bold;
+
+			&.winner {
+				color: $green;
+			}
 		}
 	}
 
