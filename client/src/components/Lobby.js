@@ -85,7 +85,7 @@ class Lobby extends Component {
     	}
     	let startAction = this.state.gamePlayed ? "New Game" : "Start Game";
 
-    	let joinLink = `${process.env.REACT_APP_CLIENT_BASE}/${this.state.gameId}`;
+    	let joinLink = `${process.env.REACT_APP_BASE_URL}/${this.state.gameId}`;
 
         return (
 	        <Container>

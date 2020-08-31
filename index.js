@@ -4,6 +4,7 @@ var app = express();
 var fs = require('fs');
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var path = require('path');
 var port = process.env.PORT || 5000;
 
 server.listen(port, function() {
@@ -13,6 +14,11 @@ server.listen(port, function() {
 
 // Routing
 app.use("/assets", express.static(__dirname + "/assets"));
+app.use(express.static(path.join(__dirname, "/client", "build")));
+
+app.get('/*', (req, res) => {
+	res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+})
 
 var gameCollection = new function() {
 	this.totalGameCount = 0;
