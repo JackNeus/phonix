@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import {Container, Row, Col, Table} from 'react-bootstrap';
+import ReactAudioPlayer from 'react-audio-player';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
+
+const BASE_URL = "http://localhost:5000/assets/";
 
 class Game extends Component {
 	constructor(props) {
@@ -80,9 +83,13 @@ class Game extends Component {
 				<tbody>
 					{this.state.guesses.map((guess)	=> {
 						let voteCount = (<span className="vote-count">{guess.votes}</span>)
+						let classes = "";
+						if (this.state.vote === guess.uid) classes = classes + "voted ";
+						if (inResultsPhase && guess.correct) classes = classes + "correct-guess";
+						
 						return (<tr key={guess.uid}>
 							<td value={guess.uid}
-								className={this.state.vote === guess.uid ? "voted" : ""}
+								className={classes}
 								onClick={() => {this.handleSendVote(guess)}}>
 								{guess.guess}
 								{inResultsPhase && voteCount}
@@ -114,7 +121,9 @@ class Game extends Component {
 						</div>
 					</Col>}
 				</Row>
-				<Row>sound: {this.state.sound}</Row>
+				<Row className="sound-player justify-content-center">
+					<ReactAudioPlayer src={`${BASE_URL}/${this.state.sound}`} autoPlay controls/>
+				</Row>
 				{gamePane}
 			</Container>
 		);

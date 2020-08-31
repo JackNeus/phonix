@@ -88,6 +88,10 @@ body {
 			border-radius: 5px;
 		}
 
+		.sound-player {
+			margin-bottom: 2em;
+		}
+
 		.game-info {
 			font-size: 1em;
 			font-weight: bold;
@@ -98,7 +102,12 @@ body {
 
 		.vote-table {
 			.voted {
-				border: 1px solid red;
+				border: 1px solid black;
+			}
+
+			.correct-guess {
+				color: $green;
+				font-weight: bold;
 			}
 
 			.vote-count {

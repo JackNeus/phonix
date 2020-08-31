@@ -12,7 +12,7 @@ server.listen(port, function() {
 });
 
 // Routing
-app.use(express.static(__dirname));
+app.use("/assets", express.static(__dirname + "/assets"));
 
 var gameCollection = new function() {
 	this.totalGameCount = 0;
@@ -28,14 +28,29 @@ const getHostedGame = function(uid) {
 	return undefined;
 };
 
-const TIMEOUT_GUESS = 1;
-const TIMEOUT_VOTE = 1;
-const TIMEOUT_RESULTS = 1;
+const TIMEOUT_GUESS = 45;
+const TIMEOUT_VOTE = 30;
+const TIMEOUT_RESULTS = 30;
 const ROUND_COUNT = 3;
 
 const POINTS_CORRECT_GUESS = 3;
 const POINTS_CORRECT_VOTE = 1;
 const POINTS_GOT_VOTE = 1;
+
+const gameSounds = [
+	{uri: "train.wav", answer: "train"},
+	{uri: "bubbles.wav", answer: "bubbles blown through straw into water"},
+	{uri: "can-stab.wav", answer: "tin cans being stabbed"},
+	{uri: "cat-eating.ogg", answer: "cat eating"},
+	{uri: "child-tickle.mp3", answer: "baby being tickled"},
+	{uri: "frog-chirp.wav", answer: "frogs"},
+	{uri: "rhino.wav", answer: "rhino"},
+	{uri: "car-horn.wav", answer: "car alarm"}
+]
+
+const getSound = () => {
+	return gameSounds[Math.floor(Math.random() * gameSounds.length)];
+}
 
 io.on('connection', (socket) => {
 	socket.on('setUsername', (username) => {
@@ -189,11 +204,19 @@ io.on('connection', (socket) => {
 
 		var guessPhase = () => {
 			game.phase = "GUESS";
-			game.guesses = [];
+			game.sound = getSound();
+			// Prepopulate guesses with correct answer.
+			game.guesses = [{
+				uid: -1,
+				username: "computer",
+				guess: game.sound.answer,
+				votes: 0,
+				correct: true,
+			}];
 			io.to(gameId).emit("gameUpdate", {
 				round: game.round,
 				phase: game.phase,
-				sound: sounds[game.round-1],
+				sound: game.sound.uri,
 				time: TIMEOUT_GUESS,
 			});
 
@@ -207,7 +230,7 @@ io.on('connection', (socket) => {
 			io.to(gameId).emit("gameUpdate", {
 				round: game.round,
 				phase: game.phase,
-				sound: sounds[game.round-1],
+				sound: game.sound.uri,
 				guesses: game.guesses,
 				time: TIMEOUT_VOTE,
 			});
@@ -219,21 +242,16 @@ io.on('connection', (socket) => {
 		}
 		var resultsPhase = () => {
 			game.phase = "RESULTS";
-				io.to(gameId).emit("gameUpdate", {
-					round: game.round,
-					phase: game.phase,
-					sound: sounds[game.round-1],
-					guesses: game.guesses,
-					time: TIMEOUT_RESULTS
-			});
 
 			// Scoring logic!
-			let sound = sounds[game.round-1];
-			let correctAnswer = sound;
+			let correctAnswer = game.sound.answer;
 			let guesses = game.guesses;
 			for (let i = 0; i < guesses.length; i++) {
+				if (guesses[i].uid == -1) continue;
+
 				// Player's guess was straight up correct.
 				if (guessesMatch(guesses[i].guess, correctAnswer)) {
+					guesses[i].correct = true;
 					game.players[guesses[i].uid].score += POINTS_CORRECT_GUESS;
 				}
 				// Player awarded points if other players vote for their guess.
@@ -247,7 +265,13 @@ io.on('connection', (socket) => {
 				}
 			}
 
-			console.log(`Sending player update for game ${gameId}!`)
+			io.to(gameId).emit("gameUpdate", {
+				round: game.round,
+				phase: game.phase,
+				sound: game.sound.uri,
+				guesses: game.guesses,
+				time: TIMEOUT_RESULTS
+			});
 			sendPlayerUpdate(gameId);
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
@@ -296,7 +320,6 @@ io.on('connection', (socket) => {
 		if (!game || game.round < 0 || game.round != round || game.phase != "GUESS") return;
 		
 		// Add guess to game.
-		// TODO: deduplicate
 		game.guesses.push({
 			uid: socket.uid,
 			username: socket.username,
