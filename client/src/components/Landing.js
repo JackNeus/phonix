@@ -30,11 +30,14 @@ class Landing extends Component {
 	}
 
 	setUsername(e) {
+		console.log("Setting username via socket.io");
 		socket.emit('setUsername', this.state.username);
 	}
 
 	handleCreateGame(e) {
+		console.log("Making game...");
 		socket.emit('makeGame', (gameId) => {
+			console.log("Received message back from server.");
 			// TODO: don't redirect just yet, as doing so 
 			// makes things like the 'back button' wonky
 			this.props.history.push(`/lobby/${gameId}`);
