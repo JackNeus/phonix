@@ -4,7 +4,7 @@ import ReactAudioPlayer from 'react-audio-player';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
 
-const BASE_URL = `${process.env.REACT_APP_BASE_URL}/assets/`;
+const BASE_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
 
 class Game extends Component {
 	constructor(props) {
