@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import {Container, Row, Col, Button} from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+
 import socket from '../socket';
 
 const names = ["Craig", "Jeffrey", "Klaus", "Velma", "Oscar", "Thomas", "Lizzy"];
@@ -11,11 +15,14 @@ const defaultUsername = getRandomName();
 class Landing extends Component {
 	constructor(props) {
 		super();
-		this.state = {};
-		this.state.username = defaultUsername;
-		this.state.joinId = props.joinId ? props.joinId : "";
+		this.state = {
+			username: defaultUsername,
+			joinId: props.joinId ? props.joinId : "",
+			publicGame: false,
+		};
 
 		this.handleChange = this.handleChange.bind(this);
+		this.handleCheck = this.handleCheck.bind(this);
 		this.setUsername = this.setUsername.bind(this);
 		this.handleCreateGame = this.handleCreateGame.bind(this);
 		this.handleJoinGame = this.handleJoinGame.bind(this);
@@ -29,17 +36,16 @@ class Landing extends Component {
 		this.setState({[e.target.name] : [e.target.value]});
 	}
 
+	handleCheck(e) {
+		this.setState({[e.target.name] : e.target.checked});
+	}
+
 	setUsername(e) {
-		console.log("Setting username via socket.io");
 		socket.emit('setUsername', this.state.username);
 	}
 
 	handleCreateGame(e) {
-		console.log("Making game...");
-		socket.emit('makeGame', (gameId) => {
-			console.log("Received message back from server.");
-			// TODO: don't redirect just yet, as doing so 
-			// makes things like the 'back button' wonky
+		socket.emit('makeGame', {}, (gameId) => {
 			this.props.history.push(`/lobby/${gameId}`);
 		});
 	}
@@ -63,15 +69,29 @@ class Landing extends Component {
 							onBlur={this.setUsername} />
 					</Col>
 				</Row>
-				<Row className='page-elt lobby-buttons justify-content-center'>
-					<Button className='createGame'
-						placeholder="Create Game"
-						onClick={this.handleCreateGame}>Create Game</Button>
-					{this.state.joinId && <div>
-						<Button className='joinGame'
-							placeholder="Join Game"
-							onClick={this.handleJoinGame}>Join Game {this.state.joinId}</Button>
-					</div>}
+				<Row className='page-elt pane light lobby-buttons justify-content-center'>
+					<Container>
+						<Row className="justify-content-center"><FormGroup row>
+							<FormControlLabel control={
+								<Checkbox color="primary"
+									name="publicGame"
+									checked={this.state.publicGame}
+									onChange={this.handleCheck}
+									/>}
+								label="Public Game"
+							/>
+						</FormGroup></Row>
+						<Row className="justify-content-center">
+							<Button className='createGame'
+								placeholder="Create Game"
+								onClick={this.handleCreateGame}>Create Game</Button>
+							{this.state.joinId && <div>
+							<Button className='joinGame'
+								placeholder="Join Game"
+								onClick={this.handleJoinGame}>Join Game {this.state.joinId}</Button>
+							</div>}
+						</Row>
+					</Container>
 				</Row>
 			</Container>
         )

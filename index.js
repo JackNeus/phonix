@@ -21,7 +21,6 @@ app.get('/*', (req, res) => {
 })
 
 var gameCollection = new function() {
-	this.totalGameCount = 0;
 	this.gameList = {};
 }
 
@@ -68,7 +67,7 @@ io.on('connection', (socket) => {
 	});
 
 	// TODO: Remove setUsername as endpoint and add username as param
-	socket.on('makeGame', (ack) => {
+	socket.on('makeGame', (data, ack) => {
 		console.log("Making game...");
 		
 		// Only allow user to create one game at a time.
@@ -85,10 +84,10 @@ io.on('connection', (socket) => {
 		gameCollection.gameList[gameId] = {
 			host: socket.uid,
 			open: true,
+			public: data.public,
 			players: {},
 			round: 0,
 		};
-		gameCollection.totalGameCount++;
 
 		ack(gameId);
 	});
