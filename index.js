@@ -82,7 +82,7 @@ const getSound = (game) => {
 io.on('connection', (socket) => {
 	console.log("Received connection from ", socket.id);
 
-	const getGamesList = () => {
+	const getGamesList = (requests) => {
 		let games = gameCollection.gameList;
 		let gameList = Object.keys(games).map((gameId) => {
 			let game = games[gameId];
@@ -93,7 +93,7 @@ io.on('connection', (socket) => {
 				started: game.started
 			};
 		}).filter((game) => {
-			return games[game.id].public;
+			return games[game.id].public || requests && requests.indexOf(game.id) != -1;
 		});
 
 		return gameList;
@@ -101,9 +101,9 @@ io.on('connection', (socket) => {
 	const sendGamesList = () => {
 		io.emit("gameList", getGamesList());
 	}
-	socket.emit("gameList", getGamesList());
-	socket.on("getGameList", () => {
-		socket.emit("gameList", getGamesList());
+	// games: Specific requests, including private games.
+	socket.on("getGameList", (games) => {
+		socket.emit("gameList", getGamesList(games));
 	})
 
 	socket.on('setUsername', (username) => {

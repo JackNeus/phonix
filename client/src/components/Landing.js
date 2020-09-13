@@ -16,9 +16,12 @@ const defaultUsername = getRandomName();
 class Landing extends Component {
 	constructor(props) {
 		super();
+		// inviteId: initial joinId
 		this.state = {
 			username: defaultUsername,
+			inviteId: props.joinId ? props.joinId : "",
 			joinId: props.joinId ? props.joinId : "",
+			errorMsg: "",
 			publicGame: true,
 			gameList: []
 		};
@@ -35,15 +38,27 @@ class Landing extends Component {
 		this.setUsername();
 		socket.on("gameList", (data) => {
 			this.setState({gameList: data});
+			let foundJoinGame = false;
 			// If selected game has started, reset joinId.
 			for (let i in data) {
 				let game = data[i];
-				if (this.state.joinId === game.id && game.started) {
-					this.setState({joinId: ""});
+				if (this.state.joinId === game.id) {
+					foundJoinGame = true;
+					if (game.id !== this.state.inviteId && game.started) {
+						this.setState({joinId: ""});
+					}
 				}
 			}
+			// If joinId is not in gameList, reset joinId.
+			if (this.state.joinId && !foundJoinGame) {
+				this.setState({
+					joinId: "",
+					errorMsg: `${this.state.joinId} does not exist.`
+				});
+			}
 		});
-		socket.emit("getGameList");
+		let games = this.state.joinId ? [this.state.joinId] : [];
+		socket.emit("getGameList", games);
 	}
 
 	componentWillUnmount() {
@@ -70,7 +85,10 @@ class Landing extends Component {
 
 	handleSelectGame(e) {
 		if (e.started) return;
-		this.setState({joinId: e.id});
+		this.setState({
+			joinId: e.id,
+			errorMsg: ""
+		});
 	}
 
 	handleJoinGame() {
@@ -117,6 +135,10 @@ class Landing extends Component {
 								onClick={this.handleJoinGame}>Join Game {this.state.joinId}</Button>
 							</div>}
 						</Row>
+						{this.state.errorMsg.length > 0 &&
+						<Row className="justify-content-center">
+							{this.state.errorMsg}
+						</Row>}
 					</Container>
 				</Row>
 				{this.state.gameList.length > 0 && <Row className="page-elt pane light">
@@ -133,8 +155,10 @@ class Landing extends Component {
 						<tbody>
 							{this.state.gameList.map((game)	=> {
 								let classes = "";
-								if (game.id === this.state.joinId) classes = classes + " selected-row";
-								if (game.started) classes = classes + " disabled-row";
+								if (game.id === this.state.joinId) 
+									classes = classes + " selected-row";
+								if (game.id !== this.state.inviteId && game.started) 
+									classes = classes + " disabled-row";
 								return (
 									<tr key={game.id}
 										className={classes}
