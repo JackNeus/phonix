@@ -45,13 +45,24 @@ const POINTS_GOT_VOTE = 1;
 
 const gameSounds = [
 	{uri: "train.wav", answer: "train"},
-	{uri: "bubbles.wav", answer: "bubbles blown through straw into water"},
-	{uri: "can-stab.wav", answer: "tin cans being stabbed"},
+	{uri: "bubbles.wav", answer: "bubbles"},
+	{uri: "can-stab.wav", answer: "tin cans"},
 	{uri: "cat-eating.ogg", answer: "cat eating"},
-	{uri: "child-tickle.mp3", answer: "baby being tickled"},
+	{uri: "child-tickle.mp3", answer: "laughing baby"},
 	{uri: "frog-chirp.wav", answer: "frogs"},
 	{uri: "rhino.wav", answer: "rhino"},
-	{uri: "car-horn.wav", answer: "car alarm"}
+	{uri: "car-horn.wav", answer: "car alarm"},
+	{uri: "ocean.wav", answer: "ocean"},
+	{uri: "elevator.wav", answer: "elevator"},
+	{uri: "subway.wav", answer: "subway"},
+	{uri: "alligator.mp3", answer: "baby allligator"},
+	{uri: "monkey.wav", answer: "monkey"},
+	{uri: "pancake-batter.wav", answer: "pancake batter"},
+	{uri: "microwave.wav", answer: "microwave"},
+	{uri: "motorcycle.wav", answer: "motorcycle"},
+	{uri: "concrete-mixer.wav", answer: "concrete-mixer"},
+	{uri: "keyboard.mp3", answer: "typing", accept: ["keyboard"]},
+	{uri: "cricket.m4a", answer: "crickets"},
 ]
 
 const getSound = (game) => {
@@ -219,8 +230,12 @@ io.on('connection', (socket) => {
 		io.to(gameId).emit("playerUpdate", {players: game.players});
 	}
 
-	var guessesMatch = (a, b) => {
-		return a === b;
+	var guessesMatch = (guess, sound) => {
+		if (guess === sound.answer) return true;
+		for (let i in sound.accept) {
+			if (guess === sound.accept[i]) return true;
+		}
+		return false;
 	}
 
 	var findWinners = (gameId) => {
@@ -319,13 +334,12 @@ io.on('connection', (socket) => {
 			game.phase = "RESULTS";
 
 			// Scoring logic!
-			let correctAnswer = game.sound.answer;
 			let guesses = game.guesses;
 			for (let i = 0; i < guesses.length; i++) {
 				if (guesses[i].uid == -1) continue;
 
 				// Player's guess was straight up correct.
-				if (guessesMatch(guesses[i].guess, correctAnswer)) {
+				if (guessesMatch(guesses[i].guess, game.sound)) {
 					guesses[i].correct = true;
 					game.players[guesses[i].uid].score += POINTS_CORRECT_GUESS;
 				}
@@ -335,7 +349,7 @@ io.on('connection', (socket) => {
 
 			for (let uid in game.players) {
 				// Player voted for correct guess.
-				if (guessesMatch(game.players[uid].vote, correctAnswer)) {
+				if (guessesMatch(game.players[uid].vote, game.sound)) {
 					game.players[uid].score += POINTS_CORRECT_VOTE;
 				}
 			}
