@@ -83,6 +83,12 @@ body {
 	.game-area {
 		min-height: 500px;
 
+		.help-icon {
+			position: absolute;
+			bottom: 0.5em;
+			right: 0.75em;
+		}
+
 		input {
 			border: hidden;
 			border-radius: 5px;

@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import {Container, Row, Col, Button} from 'react-bootstrap';
+import { Container, Row, Col, Button,
+	OverlayTrigger, Tooltip } from 'react-bootstrap';
 import socket from '../socket';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 import Game from "./Game";
 
@@ -130,6 +133,30 @@ class Lobby extends Component {
 					<Col className="pane light game-area">
 						{this.state.gameStarted &&
 							<Game gameId={this.state.gameId}/>}
+						<div className="help-icon">
+							<OverlayTrigger
+								key='help'
+								placement='top'
+								overlay={
+									<Tooltip>
+										Hello!<br />
+										A round in Phonix consists of three phases:<br />
+										1. <strong>Identify</strong>. A sound will be played.
+										Submit your guess for what it is!<br />
+										2. <strong>Vote</strong>. The correct answer has been
+										shuffled in with players' guesses. Vote for what you think
+										is correct (or funniest)!<br />
+										3. <strong>Scoring</strong>. Receive <strong>+3</strong> points
+										for guessing the sound correctly. Receive <strong>+1</strong> points
+										for voting for the correct answer. And 
+										receive <strong>+1</strong> points for each 
+										player who votes for your guess!
+									</Tooltip>
+								}
+							>
+								<FontAwesomeIcon icon={faQuestionCircle}/>
+							</OverlayTrigger>
+						</div>
 					</Col>
 				</Row>
 			</Container>
