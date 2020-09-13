@@ -1,6 +1,7 @@
 // Setup server
 var express = require('express');
 var app = express();
+var dotenv = require('dotenv').config();
 var fs = require('fs');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -33,10 +34,10 @@ const getHostedGame = function(uid) {
 	return undefined;
 };
 
-const TIMEOUT_GUESS = 45;
-const TIMEOUT_VOTE = 30;
-const TIMEOUT_RESULTS = 15;
-const ROUND_COUNT = 3;
+const TIMEOUT_GUESS = process.env.TIMEOUT_GUESS || 45;
+const TIMEOUT_VOTE = process.env.TIMEOUT_VOTE || 30;
+const TIMEOUT_RESULTS = process.env.TIMEOUT_RESULTS || 15;
+const ROUND_COUNT = process.env.ROUND_COUNT || 3;
 
 const POINTS_CORRECT_GUESS = 3;
 const POINTS_CORRECT_VOTE = 1;

@@ -5,7 +5,7 @@ import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
 
 const BASE_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
-const ROUND_COUNT = 3;
+const ROUND_COUNT = process.env.REACT_APP_ROUND_COUNT || 3;
 
 class Game extends Component {
 	constructor(props) {
@@ -81,7 +81,7 @@ class Game extends Component {
 		let inGuessPhase = this.state.phase === "GUESS";
 		let inVotePhase = this.state.phase === "VOTE";
 		let inResultsPhase = this.state.phase === "RESULTS";
-		let lastRound = this.state.round == ROUND_COUNT;
+		let lastRound = this.state.round === ROUND_COUNT;
 		if (inGuessPhase) {
 			gamePane = (
 			<div>
