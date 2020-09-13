@@ -1,21 +1,23 @@
 import React, { Component } from 'react';
-import {Container, Row, Col, Table} from 'react-bootstrap';
+import { Container, Row, Col, Table, Button } from 'react-bootstrap';
 import ReactAudioPlayer from 'react-audio-player';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
 
 const BASE_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
+const ROUND_COUNT = 3;
 
 class Game extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			gameId: props.gameId,
-			round: -1,
+			round: 0,
 			guess: false,
 		};
 		this.handleSubmitGuess = this.handleSubmitGuess.bind(this);
 		this.handleSendVote = this.handleSendVote.bind(this);
+		this.handleSkip = this.handleSkip.bind(this);
 	}
 
 	componentDidMount() {
@@ -64,12 +66,22 @@ class Game extends Component {
 		});
 	}
 
+	handleSkip() {
+		if (this.state.phase !== "RESULTS") return;
+		socket.emit("skipResults", {
+			gameId: this.state.gameId,
+			round: this.state.round,
+		});
+
+	}
+
 	render() {
 		let gamePane;
 
 		let inGuessPhase = this.state.phase === "GUESS";
 		let inVotePhase = this.state.phase === "VOTE";
 		let inResultsPhase = this.state.phase === "RESULTS";
+		let lastRound = this.state.round == ROUND_COUNT;
 		if (inGuessPhase) {
 			gamePane = (
 			<div>
@@ -78,7 +90,7 @@ class Game extends Component {
 					onKeyDown={this.handleSubmitGuess} />
 			</div>);
 		} else if (inVotePhase || inResultsPhase) {
-			gamePane = (
+			gamePane = ([
 			<Table striped hover={inVotePhase} className="vote-table">
 				<tbody>
 					{this.state.guesses.map((guess)	=> {
@@ -97,7 +109,10 @@ class Game extends Component {
 						</tr>);
 					})}
 				</tbody>
-			</Table>
+			</Table>,
+			(inResultsPhase && !lastRound &&
+				<Button onClick={this.handleSkip}>Next Round</Button>
+			)]
 			)
 		}
 

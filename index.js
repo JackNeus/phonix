@@ -35,7 +35,7 @@ const getHostedGame = function(uid) {
 
 const TIMEOUT_GUESS = 45;
 const TIMEOUT_VOTE = 30;
-const TIMEOUT_RESULTS = 30;
+const TIMEOUT_RESULTS = 15;
 const ROUND_COUNT = 3;
 
 const POINTS_CORRECT_GUESS = 3;
@@ -53,8 +53,18 @@ const gameSounds = [
 	{uri: "car-horn.wav", answer: "car alarm"}
 ]
 
-const getSound = () => {
-	return gameSounds[Math.floor(Math.random() * gameSounds.length)];
+const getSound = (game) => {
+	// If we've run out of sounds, reset used dictionary.
+	if (game.usedSounds.size == gameSounds.length) {
+		game.usedSounds = new Set();
+	}
+
+	var sound;
+	do {
+		sound = gameSounds[Math.floor(Math.random() * gameSounds.length)];
+	} while (game.usedSounds.has(sound));
+	game.usedSounds.add(sound);
+	return sound;
 }
 
 io.on('connection', (socket) => {
@@ -87,6 +97,12 @@ io.on('connection', (socket) => {
 			public: data.public,
 			players: {},
 			round: 0,
+			usedSounds: new Set()
+		};
+		gameCollection.gameList[gameId].players[socket.uid] = {
+			uid: socket.uid,
+			username: socket.username,
+			score: 0
 		};
 
 		ack(gameId);
@@ -209,9 +225,11 @@ io.on('connection', (socket) => {
 
 		let sounds = ['apple', 'banana', 'pear'];
 
+		sendPlayerUpdate(gameId);
 		var guessPhase = () => {
 			game.phase = "GUESS";
-			game.sound = getSound();
+			game.sound = getSound(game);
+			game.votes = 0;
 			// Prepopulate guesses with correct answer.
 			game.guesses = [{
 				uid: -1,
@@ -227,9 +245,19 @@ io.on('connection', (socket) => {
 				time: TIMEOUT_GUESS,
 			});
 
+			game.guessHandler = () => {
+				let playerCount = Object.keys(game.players).length;
+				if (game.guesses.length == playerCount + 1) {
+					// Everyone has guessed! Progress to vote phase.
+					votePhase();
+				}
+			}
+
 			// Wait for TIMEOUT_GUESS seconds and then advance game.
 			setTimeout(() => {
-				votePhase();
+				if (game.phase === "GUESS") {
+					votePhase();
+				}
 			}, TIMEOUT_GUESS * 1000);
 		}
 		var votePhase = () => {
@@ -242,9 +270,18 @@ io.on('connection', (socket) => {
 				time: TIMEOUT_VOTE,
 			});
 
+			game.voteHandler = () => {
+				if (++game.votes == Object.keys(game.players).length) {
+					// Everyone has voted! Progress to results phase.
+					resultsPhase();
+				}
+			}
+
 			// Wait for TIMEOUT_VOTE seconds and then advance game.
 			setTimeout(() => {
-				resultsPhase();
+				if (game.phase == "VOTE") {
+					resultsPhase();
+				}
 			}, TIMEOUT_VOTE * 1000);
 		}
 		var resultsPhase = () => {
@@ -272,17 +309,7 @@ io.on('connection', (socket) => {
 				}
 			}
 
-			io.to(gameId).emit("gameUpdate", {
-				round: game.round,
-				phase: game.phase,
-				sound: game.sound.uri,
-				guesses: game.guesses,
-				time: TIMEOUT_RESULTS
-			});
-			sendPlayerUpdate(gameId);
-
-			// Wait for TIMEOUT_RESULTS seconds and then advance game.
-			setTimeout(() => {
+			const nextRound = () => {
 				// Reset round data.
 				game.guesses = [];
 				for (let uid in game.players) game.players[uid].vote = undefined;
@@ -308,6 +335,29 @@ io.on('connection', (socket) => {
 				// Advance round.
 				game.round++;
 				guessPhase();
+			}
+
+			game.skips = 0;
+			game.skipHandler = () => {
+				if (game.round == ROUND_COUNT) return;
+				if (++game.skips == Object.keys(game.players).length) {
+					nextRound();
+				}
+			}
+
+			io.to(gameId).emit("gameUpdate", {
+				round: game.round,
+				phase: game.phase,
+				sound: game.sound.uri,
+				guesses: game.guesses,
+				time: TIMEOUT_RESULTS
+			});
+			sendPlayerUpdate(gameId);
+
+			// Wait for TIMEOUT_RESULTS seconds and then advance game.
+			setTimeout(() => {
+				if (game.phase == "RESULTS")
+					nextRound();
 			}, TIMEOUT_RESULTS * 1000);
 		}
 
@@ -333,6 +383,7 @@ io.on('connection', (socket) => {
 			guess: guess,
 			votes: 0
 		});
+		game.guessHandler();
 	})
 
 	socket.on('sendVote', (data) => {
@@ -344,7 +395,7 @@ io.on('connection', (socket) => {
 		let game = gameCollection.gameList[gameId];
 		// Return if game does not exist or guess is invalid/late.
 		if (!game || game.round < 0 || game.round != round || game.phase != "VOTE") return;
-		
+
 		// Get word that user guessed for.
 		let voteWord = vote;
 		game.players[socket.uid].vote = vote;
@@ -356,5 +407,18 @@ io.on('connection', (socket) => {
 				game.players[socket.uid].guess = game.guesses[i].guess;
 			}
 		}
+		game.voteHandler();
+	})
+
+	socket.on('skipResults', (data) => {
+		console.log(`Received skip from ${socket.username}`);
+		let gameId = data.gameId;
+		let round = data.round;
+
+		let game = gameCollection.gameList[gameId];
+		// Return if game does not exist or guess is invalid/late.
+		if (!game || game.round < 0 || game.round != round || game.phase != "RESULTS") return;
+
+		game.skipHandler();
 	})
 });
