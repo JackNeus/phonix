@@ -33,6 +33,15 @@ body {
 		margin-left: 0.25em;
 	}
 
+	.game-list {
+		.disabled-row:hover {
+			background-color: $foreground-light;
+		}
+		.selected-row {
+			font-weight: bold;
+		}
+	}
+
 	.nickname-pane {
 		input {
 			border: hidden;

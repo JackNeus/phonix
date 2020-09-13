@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button,
+	Table } from 'react-bootstrap';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -18,18 +19,35 @@ class Landing extends Component {
 		this.state = {
 			username: defaultUsername,
 			joinId: props.joinId ? props.joinId : "",
-			publicGame: false,
+			publicGame: true,
+			gameList: []
 		};
 
 		this.handleChange = this.handleChange.bind(this);
 		this.handleCheck = this.handleCheck.bind(this);
 		this.setUsername = this.setUsername.bind(this);
 		this.handleCreateGame = this.handleCreateGame.bind(this);
+		this.handleSelectGame = this.handleSelectGame.bind(this);
 		this.handleJoinGame = this.handleJoinGame.bind(this);
 	}
 
 	componentDidMount() {
 		this.setUsername();
+		socket.on("gameList", (data) => {
+			this.setState({gameList: data});
+			// If selected game has started, reset joinId.
+			for (let i in data) {
+				let game = data[i];
+				if (this.state.joinId == game.id && game.started) {
+					this.setState({joinId: ""});
+				}
+			}
+		});
+		socket.emit("getGameList");
+	}
+
+	componentWillUnmount() {
+		socket.off("gameList");
 	}
 
 	handleChange(e) {
@@ -45,9 +63,14 @@ class Landing extends Component {
 	}
 
 	handleCreateGame(e) {
-		socket.emit('makeGame', {}, (gameId) => {
+		socket.emit('makeGame', {public: this.state.publicGame}, (gameId) => {
 			this.props.history.push(`/lobby/${gameId}`);
 		});
+	}
+
+	handleSelectGame(e) {
+		if (e.started) return;
+		this.setState({joinId: e.id});
 	}
 
 	handleJoinGame() {
@@ -93,6 +116,36 @@ class Landing extends Component {
 						</Row>
 					</Container>
 				</Row>
+				{this.state.gameList.length > 0 && <Row className="page-elt pane light">
+					<h5>Public Games</h5>
+					<Table hover className="game-list">
+						<thead>
+							<tr>
+								<th>Game Id</th>
+								<th>Host</th>
+								<th>Player Count</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.state.gameList.map((game)	=> {
+								let classes = "";
+								if (game.id === this.state.joinId) classes = classes + " selected-row";
+								if (game.started) classes = classes + " disabled-row";
+								return (
+									<tr key={game.id}
+										className={classes}
+										onClick={() => {this.handleSelectGame(game)}}>
+										<td>{game.id}</td>
+										<td>{game.host}</td>
+										<td>{game.playerCount}</td>
+										<td>{game.started ? "In Progress" : "Open"}</td>
+									</tr>
+								);
+							})}
+						</tbody>
+					</Table>
+				</Row>}
 			</Container>
         )
     }

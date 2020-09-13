@@ -71,6 +71,30 @@ const getSound = (game) => {
 io.on('connection', (socket) => {
 	console.log("Received connection from ", socket.id);
 
+	const getGamesList = () => {
+		let games = gameCollection.gameList;
+		let gameList = Object.keys(games).map((gameId) => {
+			let game = games[gameId];
+			return {
+				id: gameId,
+				host: game.hostUsername,
+				playerCount: Object.keys(game.players).length,
+				started: game.started
+			};
+		}).filter((game) => {
+			return games[game.id].public;
+		});
+
+		return gameList;
+	}
+	const sendGamesList = () => {
+		io.emit("gameList", getGamesList());
+	}
+	socket.emit("gameList", getGamesList());
+	socket.on("getGameList", () => {
+		socket.emit("gameList", getGamesList());
+	})
+
 	socket.on('setUsername', (username) => {
 		console.log("Setting username for session %s to %s.", socket.id, username);
 		socket.uid = socket.id;
@@ -91,10 +115,10 @@ io.on('connection', (socket) => {
 
 		var gameId = (Math.random()+1).toString(36).slice(2, 18);
      	console.log("Game Created by "+ socket.username + " w/ " + gameId);
-
 		gameCollection.gameList[gameId] = {
 			host: socket.uid,
-			open: true,
+			hostUsername: socket.username,
+			started: false,
 			public: data.public,
 			players: {},
 			round: 0,
@@ -107,6 +131,7 @@ io.on('connection', (socket) => {
 		};
 
 		ack(gameId);
+		sendGamesList();
 	});
 
 	socket.on('joinGame', (gameId) => {
@@ -137,11 +162,13 @@ io.on('connection', (socket) => {
 				// TODO: Maybe send game update?
 			}
 		}
+		sendGamesList();
 	});
 
 	var endGame = (gameId) => {
 		io.to(gameId).emit('gameEnded');
 		delete gameCollection.gameList[gameId];
+		sendGamesList();
 	}
 
 	var leaveGames = () => {
@@ -154,6 +181,7 @@ io.on('connection', (socket) => {
 				sendPlayerUpdate(gameId);
 			}
 		}
+		sendGamesList();
 	}
 
 	socket.on('disconnect', () => {
@@ -222,7 +250,9 @@ io.on('connection', (socket) => {
 			console.log(`${gameId} has already been started.`);
 			return;
 		}
+		game.started = true;
 		io.to(gameId).emit("gameStarted");
+		sendGamesList();
 
 		let sounds = ['apple', 'banana', 'pear'];
 
