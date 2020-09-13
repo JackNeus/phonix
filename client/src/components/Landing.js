@@ -38,7 +38,7 @@ class Landing extends Component {
 			// If selected game has started, reset joinId.
 			for (let i in data) {
 				let game = data[i];
-				if (this.state.joinId == game.id && game.started) {
+				if (this.state.joinId === game.id && game.started) {
 					this.setState({joinId: ""});
 				}
 			}
@@ -94,20 +94,23 @@ class Landing extends Component {
 				</Row>
 				<Row className='page-elt pane light lobby-buttons justify-content-center'>
 					<Container>
-						<Row className="justify-content-center"><FormGroup row>
-							<FormControlLabel control={
-								<Checkbox color="primary"
-									name="publicGame"
-									checked={this.state.publicGame}
-									onChange={this.handleCheck}
-									/>}
-								label="Public Game"
-							/>
-						</FormGroup></Row>
 						<Row className="justify-content-center">
+							<FormGroup row>
+								<FormControlLabel control={
+									<Checkbox color="primary"
+										name="publicGame"
+										checked={this.state.publicGame}
+										onChange={this.handleCheck}
+										/>}
+									label="Public Game"
+								/>
+							</FormGroup>
 							<Button className='createGame'
 								placeholder="Create Game"
 								onClick={this.handleCreateGame}>Create Game</Button>
+							
+						</Row>
+						<Row className="justify-content-center">
 							{this.state.joinId && <div>
 							<Button className='joinGame'
 								placeholder="Join Game"

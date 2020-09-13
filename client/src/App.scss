@@ -33,6 +33,11 @@ body {
 		margin-left: 0.25em;
 	}
 
+	.phonix > h1 {
+		margin-bottom: 0;
+		font-family: "Courier New", Courier, monospace;
+	}
+
 	.game-list {
 		.disabled-row:hover {
 			background-color: $foreground-light;
@@ -81,6 +86,7 @@ body {
 		button {
 			margin-left: 1em;
 			margin-right: 1em;
+			height: 2.5em;
 		}
 	}
 	.action-buttons {
