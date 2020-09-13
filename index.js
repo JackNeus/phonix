@@ -60,7 +60,7 @@ const gameSounds = [
 	{uri: "pancake-batter.wav", answer: "pancake batter"},
 	{uri: "microwave.wav", answer: "microwave"},
 	{uri: "motorcycle.wav", answer: "motorcycle"},
-	{uri: "concrete-mixer.wav", answer: "concrete-mixer"},
+	{uri: "concrete-mixer.wav", answer: "concrete mixer"},
 	{uri: "keyboard.mp3", answer: "typing", accept: ["keyboard"]},
 	{uri: "cricket.m4a", answer: "crickets"},
 ]
