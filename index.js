@@ -357,6 +357,7 @@ io.on('connection', (socket) => {
 			const nextRound = () => {
 				// Reset round data.
 				game.guesses = [];
+				game.votes = 0;
 				for (let uid in game.players) game.players[uid].vote = undefined;
 
 				// Game is over.
@@ -401,8 +402,9 @@ io.on('connection', (socket) => {
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
 			setTimeout(() => {
-				if (game.phase == "RESULTS")
+				if (game.phase === "RESULTS") {
 					nextRound();
+				}
 			}, TIMEOUT_RESULTS * 1000);
 		}
 
