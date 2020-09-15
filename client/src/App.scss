@@ -59,9 +59,14 @@ body {
 		text-align: center;
 		height: 7em;
 
-		a {
+		a,.link {
 			color: $background;
 			font-weight: bold;
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
 		}
 	}
 

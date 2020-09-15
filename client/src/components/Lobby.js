@@ -4,6 +4,7 @@ import { Container, Row, Col, Button,
 import socket from '../socket';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 import Game from "./Game";
 
@@ -89,6 +90,15 @@ class Lobby extends Component {
     	let startAction = this.state.gamePlayed ? "New Game" : "Start Game";
 
 		let joinLink = `${process.env.REACT_APP_CLIENT_URL}/${this.state.gameId}`;
+		let joinLinkComponent = (
+			<OverlayTrigger
+				key='join-link'
+				placement='bottom'
+				overlay={<Tooltip>Click to copy to the clipboard!</Tooltip>}>
+				<CopyToClipboard text={joinLink}>
+					<span>Join link: <span className="link">{joinLink}</span></span>
+				</CopyToClipboard>
+			</OverlayTrigger>);
 
         return (
 	        <Container>
@@ -97,11 +107,7 @@ class Lobby extends Component {
 			      	<span className="align-middle">
 			      	Lobby: {this.state.gameId}&nbsp;
 			      	<br />
-			      	{this.state.isHost &&
-			      	<span>
-			      		(Join link: <a target="_blank" rel="noopener noreferrer" href={joinLink}>{joinLink}</a>)
-			      	</span>
-			      	}
+			      	{this.state.isHost && joinLinkComponent}
 			      	</span>
 			      </Col>
 			      <Col className="action-buttons">
