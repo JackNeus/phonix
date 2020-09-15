@@ -15,8 +15,7 @@ $green: #27ae60;
 body {
 	background-color: $background;
 	.page-elt {
-		margin-top: 1em;
-		margin-bottom: 1em;
+		margin-top: 0.5em;
 	}
 	.pane {
 		background-color: $foreground;
@@ -29,8 +28,6 @@ body {
 		}
 
 		padding: 25px;
-		margin-right: 0.25em;
-		margin-left: 0.25em;
 	}
 
 	.phonix > h1 {
@@ -57,7 +54,8 @@ body {
 
 	.lobby-info {
 		text-align: center;
-		height: 7em;
+		height: auto;
+		min-height: 7em;
 
 		a,.link {
 			color: $background;
@@ -68,22 +66,35 @@ body {
 				text-decoration: underline;
 			}
 		}
+
+		@include media-breakpoint-up('sm') {
+			margin-right: 0.5em;
+		}
 	}
 
-	.player-info {
-		font-size: 1.2em;
-
-		.player-score {
-			font-weight: bold;
-
-			&.winner {
-				color: $green;
-			}
+	.player-pane {
+		@include media-breakpoint-up('md') {
+			margin-right: 0.5em;
+		}
+		@include media-breakpoint-down('sm') {
+			margin-bottom: 0.5em;
 		}
 
-		&.winner {
-			font-weight: bold;
-			color: $red;
+		.player-info {
+			font-size: 1.2em;
+
+			.player-score {
+				font-weight: bold;
+
+				&.winner {
+					color: $green;
+				}
+			}
+
+			&.winner {
+				font-weight: bold;
+				color: $red;
+			}
 		}
 	}
 
@@ -94,12 +105,38 @@ body {
 			height: 2.5em;
 		}
 	}
+	
 	.action-buttons {
-		padding-top: 0.5em;
-		button {
-			margin-bottom: 1em;
+		padding-top: 0.25em;
+		@include media-breakpoint-down('xs') {
+			padding-top: 0.5em;
+		}
+
+		@include media-breakpoint-up('sm') {
+			width: 7.1em;
+			padding-left: 0;
+			padding-right: 0;
+			margin-left: 0.5em;
+		}
+
+		.action-button {
+			@include media-breakpoint-up('sm') {
+				margin-bottom: 0.25em;
+			}
+			@include media-breakpoint-down('xs') {
+				margin-right: 0.5em;
+			}
+
+			> button {
+				float: right;
+				width: 7.5em;
+			}
+
+			padding-left: 0;
+			padding-right: 0;
 		}
 	}
+
 	.game-area {
 		min-height: 500px;
 

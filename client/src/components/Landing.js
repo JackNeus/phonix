@@ -144,7 +144,7 @@ class Landing extends Component {
 				</Row>
 				{this.state.gameList.length > 0 && <Row className="page-elt pane light">
 					<h5>Public Games</h5>
-					<Table hover className="game-list">
+					<Table responsive hover className="game-list">
 						<thead>
 							<tr>
 								<th>Game Id</th>

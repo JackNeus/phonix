@@ -116,25 +116,29 @@ class Lobby extends Component {
         return (
 	        <Container>
 	        	<Row className="page-elt justify-content-center">
-			      <Col className="pane lobby-info" md="10">
+			      <Col className="pane lobby-info">
 			      	<span className="align-middle">
 			      	Lobby: {this.state.gameId}&nbsp;
 			      	<br />
 			      	{this.state.isHost && joinLinkComponent}
 			      	</span>
 			      </Col>
-			      <Col className="action-buttons">
+			      <Col className="action-buttons" xs={12} sm="auto">
 			      	<Container>
-			      		<Row>
-			      			<Button onClick={this.exitLobby}>{leaveAction}</Button>
+			      		<Row className="justify-content-sm-end justify-content-around">
+				      		<Col className="action-button" xs="auto">
+				      			<Button onClick={this.exitLobby}>{leaveAction}</Button>
+				      		</Col>
+				      		{this.state.isHost && !this.state.gameStarted &&
+				      		<Col className="action-button" xs="auto">
+				      			<Button onClick={this.startGame}>{startAction}</Button>
+				      		</Col>}
 			      		</Row>
-			      		{this.state.isHost && !this.state.gameStarted &&
-			      		<Row><Button onClick={this.startGame}>{startAction}</Button></Row>}
 			      	</Container>
 			      </Col>
 				</Row>
 				<Row className="page-elt">
-					<Col className="pane" md="3">
+					<Col className="pane player-pane" md="3">
 						<Container>
 						{this.state.players.map((player) => {
 							return (
