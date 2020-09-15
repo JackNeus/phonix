@@ -6,6 +6,8 @@ var fs = require('fs');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var tsServer = require('timesync/server');
+var cors = require('cors');
 var port = process.env.PORT || 5000;
 
 var server = http.listen(port, function() {
@@ -16,6 +18,7 @@ var server = http.listen(port, function() {
 // Routing
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.static(path.join(__dirname, "/client", "build")));
+app.use("/timesync", cors(), tsServer.requestHandler);
 
 app.get('/*', (req, res) => {
 	res.sendFile(path.join(__dirname, "client", "build", "index.html"));
@@ -33,6 +36,18 @@ const getHostedGame = function(uid) {
 	}
 	return undefined;
 };
+
+const gameExists = (gameId) => {
+	return gameCollection.gameList[gameId] !== undefined;
+}
+
+const tsNow = () => {
+	return new Date().getTime();
+}
+
+const calculateTimeout = (endTime) => {
+	return endTime - tsNow();
+}
 
 const TIMEOUT_GUESS = process.env.TIMEOUT_GUESS || 45;
 const TIMEOUT_VOTE = process.env.TIMEOUT_VOTE || 30;
@@ -179,6 +194,7 @@ io.on('connection', (socket) => {
 	var endGame = (gameId) => {
 		io.to(gameId).emit('gameEnded');
 		delete gameCollection.gameList[gameId];
+		socket.leave(gameId);
 		sendGamesList();
 	}
 
@@ -189,6 +205,7 @@ io.on('connection', (socket) => {
 			if (game.players[socket.uid]) {
 				console.log("Leaving game.");
 				delete game.players[player];
+				socket.leave(gameId);
 				sendPlayerUpdate(gameId);
 			}
 		}
@@ -273,6 +290,10 @@ io.on('connection', (socket) => {
 
 		sendPlayerUpdate(gameId);
 		var guessPhase = () => {
+			// If game ended or was deleted for some other reason, stop sending
+			// game updates.
+			if (!gameExists(gameId)) return;
+
 			game.phase = "GUESS";
 			game.sound = getSound(game);
 			game.votes = 0;
@@ -284,11 +305,15 @@ io.on('connection', (socket) => {
 				votes: 0,
 				correct: true,
 			}];
+			game.timeoutStart = tsNow();
+			game.timeoutEnd = game.timeoutStart + TIMEOUT_GUESS * 1000;
 			io.to(gameId).emit("gameUpdate", {
+				gameId: gameId,
 				round: game.round,
 				phase: game.phase,
 				sound: game.sound.uri,
-				time: TIMEOUT_GUESS,
+				timeoutStart: game.timeoutStart,
+				timeoutEnd: game.timeoutEnd,
 			});
 
 			game.guessHandler = () => {
@@ -304,16 +329,24 @@ io.on('connection', (socket) => {
 				if (game.phase === "GUESS") {
 					votePhase();
 				}
-			}, TIMEOUT_GUESS * 1000);
+			}, calculateTimeout(game.timeoutEnd));
 		}
 		var votePhase = () => {
+			// If game ended or was deleted for some other reason, stop sending
+			// game updates.
+			if (!gameExists(gameId)) return;
+
 			game.phase = "VOTE";
+			game.timeoutStart = tsNow();
+			game.timeoutEnd = game.timeoutStart + TIMEOUT_VOTE * 1000;
 			io.to(gameId).emit("gameUpdate", {
+				gameId: gameId,
 				round: game.round,
 				phase: game.phase,
 				sound: game.sound.uri,
 				guesses: game.guesses,
-				time: TIMEOUT_VOTE,
+				timeoutStart: game.timeoutStart,
+				timeoutEnd: game.timeoutEnd,
 			});
 
 			game.voteHandler = () => {
@@ -328,9 +361,12 @@ io.on('connection', (socket) => {
 				if (game.phase == "VOTE") {
 					resultsPhase();
 				}
-			}, TIMEOUT_VOTE * 1000);
+			}, calculateTimeout(game.timeoutEnd));
 		}
 		var resultsPhase = () => {
+			// If game ended or was deleted for some other reason, stop sending
+			// game updates.
+			if (!gameExists(gameId)) return;
 			game.phase = "RESULTS";
 
 			// Scoring logic!
@@ -355,6 +391,10 @@ io.on('connection', (socket) => {
 			}
 
 			const nextRound = () => {
+				// If game ended or was deleted for some other reason, stop sending
+				// game updates.
+				if (!gameExists(gameId)) return;
+
 				// Reset round data.
 				game.guesses = [];
 				game.votes = 0;
@@ -391,12 +431,16 @@ io.on('connection', (socket) => {
 				}
 			}
 
+			game.timeoutStart = tsNow();
+			game.timeoutEnd = game.timeoutStart + TIMEOUT_RESULTS * 1000;
 			io.to(gameId).emit("gameUpdate", {
+				gameId: gameId,
 				round: game.round,
 				phase: game.phase,
 				sound: game.sound.uri,
 				guesses: game.guesses,
-				time: TIMEOUT_RESULTS
+				timeoutStart: game.timeoutStart,
+				timeoutEnd: game.timeoutEnd,
 			});
 			sendPlayerUpdate(gameId);
 
@@ -405,7 +449,7 @@ io.on('connection', (socket) => {
 				if (game.phase === "RESULTS") {
 					nextRound();
 				}
-			}, TIMEOUT_RESULTS * 1000);
+			}, calculateTimeout(game.timeoutEnd));
 		}
 
 		// Start game!

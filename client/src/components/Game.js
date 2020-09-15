@@ -3,9 +3,14 @@ import { Container, Row, Col, Table, Button } from 'react-bootstrap';
 import ReactAudioPlayer from 'react-audio-player';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import socket from '../socket';
+import * as timesync from 'timesync';
 
 const BASE_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
 const ROUND_COUNT = process.env.REACT_APP_ROUND_COUNT || 3;
+
+var ts = timesync.create({
+	server: `${process.env.REACT_APP_SERVER_URL}/timesync`
+});
 
 class Game extends Component {
 	constructor(props) {
@@ -22,11 +27,14 @@ class Game extends Component {
 
 	componentDidMount() {
 		socket.on("gameUpdate", (data) => {
+			if (data.gameId !== this.state.gameId) return;
 			this.setState({
 				round: data.round,
 				phase: data.phase,
 				sound: data.sound,
-				time: data.time,
+				ts: ts.now(),
+				timeoutStart: data.timeoutStart,
+				timeoutEnd: data.timeoutEnd,
 				guesses: data.guesses
 			});
 			if (data.phase === "GUESS") {
@@ -36,6 +44,14 @@ class Game extends Component {
 				});
 			}
 		})
+		// This is necessary because if the tab is inactive, the
+		// render function will be called but the results of the
+		// render function will not be properly rendered until
+		// the tab becomes active. This means that the timer will be
+		// off.
+		setInterval(() => {
+			this.setState({ts: ts.now()});
+		}, 5000);
 	}
 
 	componentWillUnmount() {
@@ -115,26 +131,31 @@ class Game extends Component {
 			)]
 			)
 		}
+		var duration = (this.state.timeoutEnd - this.state.timeoutStart) / 1000;
+		var remaining = (this.state.timeoutEnd - this.state.ts) / 1000;
+
+		var timer = (
+			<CountdownCircleTimer
+				key={this.state.ts}
+				isPlaying
+				size={35}
+				strokeWidth={5}
+				strokeCap="square"
+				colors={[["#3498db"]]}
+				duration={duration}
+				initialRemainingTime={remaining}>
+				{({r}) => r}
+			</CountdownCircleTimer>);
 
 		return (
 			<Container>
 				<Row className="game-info">
 					<Col>Round: {this.state.round}</Col>
-					{this.state.time > 0 &&
 					<Col>
 						<div className="timer">
-						<CountdownCircleTimer
-							key={this.state.phase}
-							isPlaying
-							size={35}
-							strokeWidth={5}
-							strokeCap="square"
-							colors={[["#3498db"]]}
-							duration={this.state.time}>
-							{({r}) => r}
-						</CountdownCircleTimer>
+						{timer}
 						</div>
-					</Col>}
+					</Col>
 				</Row>
 				<Row className="sound-player justify-content-center">
 					<ReactAudioPlayer src={`${BASE_URL}/${this.state.sound}`} autoPlay controls/>

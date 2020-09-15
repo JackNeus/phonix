@@ -130,6 +130,7 @@ class Landing extends Component {
 						</Row>
 						<Row className="justify-content-center">
 							{this.state.joinId && <div>
+							<hr />
 							<Button className='joinGame'
 								placeholder="Join Game"
 								onClick={this.handleJoinGame}>Join Game {this.state.joinId}</Button>
