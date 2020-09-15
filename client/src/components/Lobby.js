@@ -127,7 +127,8 @@ class Lobby extends Component {
 			      	<Container>
 			      		<Row className="justify-content-sm-end justify-content-around">
 				      		<Col className="action-button" xs="auto">
-				      			<Button onClick={this.exitLobby}>{leaveAction}</Button>
+				      			<Button className={!this.state.isHost ? "wide" : ""}
+				      				onClick={this.exitLobby}>{leaveAction}</Button>
 				      		</Col>
 				      		{this.state.isHost && !this.state.gameStarted &&
 				      		<Col className="action-button" xs="auto">
