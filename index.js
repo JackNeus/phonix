@@ -72,7 +72,7 @@ const gameSounds = [
 	{uri: "subway.wav", answer: "subway"},
 	{uri: "alligator.mp3", answer: "baby allligator"},
 	{uri: "monkey.wav", answer: "monkey"},
-	{uri: "pancake-batter.wav", answer: "pancake batter"},
+	//{uri: "pancake-batter.wav", answer: "pancake batter"},
 	{uri: "microwave.wav", answer: "microwave"},
 	{uri: "motorcycle.wav", answer: "motorcycle"},
 	{uri: "concrete-mixer.wav", answer: "concrete mixer"},
@@ -402,11 +402,6 @@ io.on('connection', (socket) => {
 
 				// Game is over.
 				if (game.round == ROUND_COUNT) {
-					// TODO: this whole bit is clunky and can be done client-side
-					winners = findWinners(gameId);
-					for (let i in winners) {
-						game.players[winners[i]].winner = true;
-					}
 					sendPlayerUpdate(gameId);
 					io.to(gameId).emit("gameFinished");
 

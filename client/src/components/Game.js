@@ -6,7 +6,7 @@ import socket from '../socket';
 import * as timesync from 'timesync';
 
 const BASE_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
-const ROUND_COUNT = process.env.REACT_APP_ROUND_COUNT || 3;
+const ROUND_COUNT = parseInt(process.env.REACT_APP_ROUND_COUNT) || 3;
 
 var ts = timesync.create({
 	server: `${process.env.REACT_APP_SERVER_URL}/timesync`

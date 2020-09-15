@@ -33,11 +33,22 @@ class Lobby extends Component {
 			this.exitLobby();
 		})
 
+		const markWinners = () => {
+			let players = this.state.players;
+			let i = 0, winningScore = players[0].score;
+			while (i < players.length && players[i].score === winningScore) {
+				players[i].winner = true;
+				i++;
+			}
+			this.setState({players: players});
+		}
+
 		socket.on("playerUpdate", (data) => {
 			let players = Object.values(data.players);
 			players.sort((a, b) => a.score < b.score ? 1 : -1);
 
 			this.setState({players: players});
+			if (this.state.gamePlayed && !this.state.gameStarted) markWinners();
 		})
 
 		socket.on("gameStarted", () => {
@@ -53,7 +64,9 @@ class Lobby extends Component {
 		})
 
 		socket.on("gameFinished", () => {
+			console.log("Game finished.");
 			this.setState({gameStarted: false});
+			markWinners();
 		})
 	}
 
