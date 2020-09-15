@@ -176,7 +176,6 @@ io.on('connection', (socket) => {
 			// Join lobby channel.
 			socket.join(gameId);
 			// Send client a success message.
-			// TODO: Probably should just pass full game state in the future
 			socket.emit("joinSuccess",
 				{gameId: gameId,
 				 isHost: socket.uid == game.host});
@@ -185,7 +184,7 @@ io.on('connection', (socket) => {
 			if (game.round > 0) { 
 				// In case player joins in the middle of a game.
 				socket.emit("gameStarted");
-				// TODO: Maybe send game update?
+				sendGameUpdate(gameId);
 			}
 		}
 		sendGamesList();
@@ -245,6 +244,22 @@ io.on('connection', (socket) => {
 		let game = gameCollection.gameList[gameId];
 		// Broadcast new client joining to whole room.
 		io.to(gameId).emit("playerUpdate", {players: game.players});
+	}
+
+	var sendGameUpdate = (gameId) => {
+		let game = gameCollection.gameList[gameId];
+		let update = {
+			gameId: gameId,
+			round: game.round,
+			phase: game.phase,
+			sound: game.sound.uri,
+			timeoutStart: game.timeoutStart,
+			timeoutEnd: game.timeoutEnd,
+		};
+		if (game.phase !== "GUESS") {
+			update.guesses = game.guesses;
+		}
+		io.to(gameId).emit("gameUpdate", update);
 	}
 
 	var guessesMatch = (guess, sound) => {
@@ -307,14 +322,7 @@ io.on('connection', (socket) => {
 			}];
 			game.timeoutStart = tsNow();
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_GUESS * 1000;
-			io.to(gameId).emit("gameUpdate", {
-				gameId: gameId,
-				round: game.round,
-				phase: game.phase,
-				sound: game.sound.uri,
-				timeoutStart: game.timeoutStart,
-				timeoutEnd: game.timeoutEnd,
-			});
+			sendGameUpdate(gameId);
 
 			game.guessHandler = () => {
 				let playerCount = Object.keys(game.players).length;
@@ -339,15 +347,7 @@ io.on('connection', (socket) => {
 			game.phase = "VOTE";
 			game.timeoutStart = tsNow();
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_VOTE * 1000;
-			io.to(gameId).emit("gameUpdate", {
-				gameId: gameId,
-				round: game.round,
-				phase: game.phase,
-				sound: game.sound.uri,
-				guesses: game.guesses,
-				timeoutStart: game.timeoutStart,
-				timeoutEnd: game.timeoutEnd,
-			});
+			sendGameUpdate(gameId);
 
 			game.voteHandler = () => {
 				if (++game.votes == Object.keys(game.players).length) {
@@ -411,6 +411,7 @@ io.on('connection', (socket) => {
 					io.to(gameId).emit("gameFinished");
 
 					// Reset game
+					game.started = false;
 					game.round = 0;
 					for (let uid in game.players) {
 						game.players[uid].winner = false;
@@ -433,15 +434,7 @@ io.on('connection', (socket) => {
 
 			game.timeoutStart = tsNow();
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_RESULTS * 1000;
-			io.to(gameId).emit("gameUpdate", {
-				gameId: gameId,
-				round: game.round,
-				phase: game.phase,
-				sound: game.sound.uri,
-				guesses: game.guesses,
-				timeoutStart: game.timeoutStart,
-				timeoutEnd: game.timeoutEnd,
-			});
+			sendGameUpdate(gameId);
 			sendPlayerUpdate(gameId);
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
