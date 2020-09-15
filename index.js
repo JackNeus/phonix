@@ -301,8 +301,6 @@ io.on('connection', (socket) => {
 		io.to(gameId).emit("gameStarted");
 		sendGamesList();
 
-		let sounds = ['apple', 'banana', 'pear'];
-
 		sendPlayerUpdate(gameId);
 		var guessPhase = () => {
 			// If game ended or was deleted for some other reason, stop sending
@@ -324,20 +322,17 @@ io.on('connection', (socket) => {
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_GUESS * 1000;
 			sendGameUpdate(gameId);
 
+			// Wait for TIMEOUT_GUESS seconds and then advance game.
+			let timeoutId = setTimeout(votePhase, calculateTimeout(game.timeoutEnd));
+
 			game.guessHandler = () => {
 				let playerCount = Object.keys(game.players).length;
 				if (game.guesses.length == playerCount + 1) {
+					clearTimeout(timeoutId);
 					// Everyone has guessed! Progress to vote phase.
 					votePhase();
 				}
 			}
-
-			// Wait for TIMEOUT_GUESS seconds and then advance game.
-			setTimeout(() => {
-				if (game.phase === "GUESS") {
-					votePhase();
-				}
-			}, calculateTimeout(game.timeoutEnd));
 		}
 		var votePhase = () => {
 			// If game ended or was deleted for some other reason, stop sending
@@ -349,19 +344,16 @@ io.on('connection', (socket) => {
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_VOTE * 1000;
 			sendGameUpdate(gameId);
 
+			// Wait for TIMEOUT_VOTE seconds and then advance game.
+			let timeoutId = setTimeout(resultsPhase, calculateTimeout(game.timeoutEnd));
+
 			game.voteHandler = () => {
 				if (++game.votes == Object.keys(game.players).length) {
+					clearTimeout(timeoutId);
 					// Everyone has voted! Progress to results phase.
 					resultsPhase();
 				}
 			}
-
-			// Wait for TIMEOUT_VOTE seconds and then advance game.
-			setTimeout(() => {
-				if (game.phase == "VOTE") {
-					resultsPhase();
-				}
-			}, calculateTimeout(game.timeoutEnd));
 		}
 		var resultsPhase = () => {
 			// If game ended or was deleted for some other reason, stop sending
@@ -419,25 +411,23 @@ io.on('connection', (socket) => {
 				guessPhase();
 			}
 
-			game.skips = 0;
-			game.skipHandler = () => {
-				if (game.round == ROUND_COUNT) return;
-				if (++game.skips == Object.keys(game.players).length) {
-					nextRound();
-				}
-			}
-
 			game.timeoutStart = tsNow();
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_RESULTS * 1000;
 			sendGameUpdate(gameId);
 			sendPlayerUpdate(gameId);
 
 			// Wait for TIMEOUT_RESULTS seconds and then advance game.
-			setTimeout(() => {
-				if (game.phase === "RESULTS") {
+			let timeoutId = setTimeout(nextRound, calculateTimeout(game.timeoutEnd));
+
+			game.skips = 0;
+			game.skipHandler = () => {
+				if (game.round == ROUND_COUNT) return;
+				if (++game.skips == Object.keys(game.players).length) {
+					clearTimeout(timeoutId);
 					nextRound();
 				}
-			}, calculateTimeout(game.timeoutEnd));
+			}
+
 		}
 
 		// Start game!

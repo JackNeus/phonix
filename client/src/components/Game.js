@@ -19,6 +19,8 @@ class Game extends Component {
 			gameId: props.gameId,
 			round: 0,
 			guess: false,
+			timeoutStart: -1,
+			timeoutEnd: -1,
 		};
 		this.handleSubmitGuess = this.handleSubmitGuess.bind(this);
 		this.handleSendVote = this.handleSendVote.bind(this);
@@ -49,13 +51,14 @@ class Game extends Component {
 		// render function will not be properly rendered until
 		// the tab becomes active. This means that the timer will be
 		// off.
-		setInterval(() => {
+		this.tsTimer = setInterval(() => {
 			this.setState({ts: ts.now()});
 		}, 5000);
 	}
 
 	componentWillUnmount() {
 		socket.off("gameUpdate");
+		clearInterval(this.tsTimer);
 	}
 
 	handleSubmitGuess(e) {
@@ -98,6 +101,7 @@ class Game extends Component {
 		let inVotePhase = this.state.phase === "VOTE";
 		let inResultsPhase = this.state.phase === "RESULTS";
 		let lastRound = this.state.round === ROUND_COUNT;
+
 		if (inGuessPhase) {
 			gamePane = (
 			<div>
@@ -106,7 +110,7 @@ class Game extends Component {
 					onKeyDown={this.handleSubmitGuess} />
 			</div>);
 		} else if (inVotePhase || inResultsPhase) {
-			gamePane = ([
+			let table = (
 			<Table striped hover={inVotePhase} className="vote-table">
 				<tbody>
 					{this.state.guesses.map((guess)	=> {
@@ -125,27 +129,33 @@ class Game extends Component {
 						</tr>);
 					})}
 				</tbody>
-			</Table>,
-			(inResultsPhase && !lastRound &&
-				<Button onClick={this.handleSkip}>Next Round</Button>
-			)]
-			)
+			</Table>);
+			gamePane = (
+				<React.Fragment>
+					{table}
+					{inResultsPhase && !lastRound &&
+						<Button onClick={this.handleSkip}>Next Round</Button>
+					}
+				</React.Fragment>
+			);
 		}
-		var duration = (this.state.timeoutEnd - this.state.timeoutStart) / 1000;
-		var remaining = (this.state.timeoutEnd - this.state.ts) / 1000;
+		if (this.state.timeoutStart !== -1) {
+			var duration = (this.state.timeoutEnd - this.state.timeoutStart) / 1000;
+			var remaining = (this.state.timeoutEnd - this.state.ts) / 1000;
 
-		var timer = (
-			<CountdownCircleTimer
-				key={this.state.ts}
-				isPlaying
-				size={35}
-				strokeWidth={5}
-				strokeCap="square"
-				colors={[["#3498db"]]}
-				duration={duration}
-				initialRemainingTime={remaining}>
-				{({r}) => r}
-			</CountdownCircleTimer>);
+			var timer = (
+				<CountdownCircleTimer
+					key={this.state.ts}
+					isPlaying
+					size={35}
+					strokeWidth={5}
+					strokeCap="square"
+					colors={[["#3498db"]]}
+					duration={duration}
+					initialRemainingTime={remaining}>
+					{({r}) => r}
+				</CountdownCircleTimer>);
+		}
 
 		return (
 			<Container>
