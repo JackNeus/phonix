@@ -78,6 +78,7 @@ class Landing extends Component {
 	}
 
 	handleCreateGame(e) {
+		this.setUsername();
 		socket.emit('makeGame', {public: this.state.publicGame}, (gameId) => {
 			this.props.history.push(`/lobby/${gameId}`);
 		});

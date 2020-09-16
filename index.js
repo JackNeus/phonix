@@ -127,7 +127,6 @@ io.on('connection', (socket) => {
 		socket.username = username;
 	});
 
-	// TODO: Remove setUsername as endpoint and add username as param
 	socket.on('makeGame', (data, ack) => {
 		console.log("Making game...");
 		
