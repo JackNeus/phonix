@@ -445,6 +445,11 @@ io.on('connection', (socket) => {
 		// Return if game does not exist or guess is invalid/late.
 		if (!game || game.round < 0 || game.round != round || game.phase != "GUESS") return;
 		
+		// Don't allow players to submit multiple guesses.
+		for (let i in game.guesses) {
+			if (game.guesses[i].uid === socket.uid) return;
+		}
+
 		// Add guess to game.
 		game.guesses.push({
 			uid: socket.uid,
@@ -465,13 +470,16 @@ io.on('connection', (socket) => {
 		// Return if game does not exist or guess is invalid/late.
 		if (!game || game.round < 0 || game.round != round || game.phase != "VOTE") return;
 
+		// Player already voted this round.
+		if (game.players[socket.uid].vote !== undefined) return;
+
 		// Get word that user guessed for.
 		let voteWord = vote;
 		game.players[socket.uid].vote = vote;
 
 		// Add a vote to all guesses with that word (there could be multiple).
 		for (let i = 0; i < game.guesses.length; i++) {
-			if (game.guesses[i].guess === voteWord) {
+			if (guessesMatch(game.guesses[i].guess, voteWord)) {
 				game.guesses[i].votes++;
 				game.players[socket.uid].guess = game.guesses[i].guess;
 			}
