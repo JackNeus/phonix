@@ -38,7 +38,7 @@ const getHostedGame = function(uid) {
 };
 
 const gameExists = (gameId) => {
-	return gameCollection.gameList[gameId] !== undefined;
+	return gameId in gameCollection.gameList;
 }
 
 const tsNow = () => {
@@ -101,10 +101,11 @@ io.on('connection', (socket) => {
 		let games = gameCollection.gameList;
 		let gameList = Object.keys(games).map((gameId) => {
 			let game = games[gameId];
+			
 			return {
 				id: gameId,
 				host: game.hostUsername,
-				playerCount: Object.keys(game.players).length,
+				playerCount: getActivePlayerCount(gameId),
 				started: game.started
 			};
 		}).filter((game) => {
@@ -177,13 +178,13 @@ io.on('connection', (socket) => {
 			// Send client a success message.
 			socket.emit("joinSuccess",
 				{gameId: gameId,
-				 isHost: socket.uid == game.host});
+				 host: game.host});
 			sendPlayerUpdate(gameId);
 
 			if (game.round > 0) { 
 				// In case player joins in the middle of a game.
 				socket.emit("gameStarted");
-				sendGameUpdate(gameId);
+				sendGameUpdate(gameId, true);
 			}
 		}
 		sendGamesList();
@@ -196,34 +197,93 @@ io.on('connection', (socket) => {
 		sendGamesList();
 	}
 
+	var assignNewHost = (gameId) => {
+		let game = gameCollection.gameList[gameId];
+		let newHost = getActivePlayer(gameId);
+		if (newHost == -1) {
+			console.log(`Could not find new host for ${gameId}. Ending.`);
+			endGame(gameId);
+			return;
+		} else {
+			console.log(`Found new host for ${gameId}: ${newHost}`);
+			game.host = newHost;
+			game.hostUsername = game.players[newHost].username;
+		}
+	}
+
+	// TODO: None of this stuff should be plural. Enforce game limit more explicitly
 	var leaveGames = () => {
 		let player = socket.uid;
 		for (var gameId in gameCollection.gameList) {
 			let game = gameCollection.gameList[gameId];
+
 			if (game.players[socket.uid]) {
-				console.log("Leaving game.");
+				console.log(`${player} leaving game ${gameId}.`);
 				delete game.players[player];
 				socket.leave(gameId);
+
+				// Player is host and tried to leave game.
+				if (game.host == player) {
+					assignNewHost(gameId);
+				}
 				sendPlayerUpdate(gameId);
 			}
 		}
 		sendGamesList();
 	}
 
-	socket.on('disconnect', () => {
-		console.log(`${socket.username} (${socket.uid}) disconnected.`);
-		// When a client disconnects, end any games they are hosting (there should be at most one).
-		for (var gameId in gameCollection.gameList) {
-			if (gameCollection.gameList[gameId].host == socket.uid) {
-				console.log(`Host left ${gameId}`);
-				endGame(gameId);
+	var getActivePlayerCount = (gameId) => {
+		let game = gameCollection.gameList[gameId];
+		let count = 0;
+		for (let id in game.players) {
+			if (!game.players[id].disconnected) count++;
+		}
+		return count;
+	}
+
+	var getActivePlayer = (gameId) => {
+		let game = gameCollection.gameList[gameId];
+		for (let id in game.players) {
+			if (!game.players[id].disconnected) {
+				return id;
 			}
 		}
-		// When a client disconnects, leave any games they are in.
-		leaveGames();
+		return -1;
+	}
+
+	socket.on('disconnect', () => {
+		console.log(`${socket.username} (${socket.uid}) disconnected.`);
+		
+		// When a client disconnects, end any games they are hosting (there should be at most one).
+		for (var gameId in gameCollection.gameList) {
+			let game = gameCollection.gameList[gameId];
+			if (!(socket.uid in game.players)) continue;
+
+			game.players[socket.uid].disconnected = true;
+			if (gameCollection.gameList[gameId].host == socket.uid) {
+				assignNewHost(gameId);
+			}
+			if (gameExists(gameId))	sendPlayerUpdate(gameId);
+		}
 	});
 
-	// TODO: .on("reconnect")?
+	socket.on("reconnect", () => {
+		for (var gameId in gameCollection.gameList) {
+			let game = gameCollection.gameList[gameId];
+			if (!(socket.uid in game.players)) continue;
+
+			game.players[socket.uid].disconnected = false;
+			sendPlayerUpdate(gameId);
+			sendGameUpdate(gameId, true);
+		}
+	});
+
+	/* Currently disabled.
+	socket.on("reconnect_failed", () => {
+		console.log(`${socket.username} (${socket.uid}) failed to reconnect.`);
+		leaveGames();
+	})
+	*/
 
 	socket.on("leaveGame", () => {
 		console.log(`${socket.username} (${socket.uid}) left game.`);
@@ -242,10 +302,13 @@ io.on('connection', (socket) => {
 	var sendPlayerUpdate = (gameId) => {
 		let game = gameCollection.gameList[gameId];
 		// Broadcast new client joining to whole room.
-		io.to(gameId).emit("playerUpdate", {players: game.players});
+		io.to(gameId).emit("playerUpdate", {
+			host: game.host,
+			players: game.players
+		});
 	}
 
-	var sendGameUpdate = (gameId) => {
+	var sendGameUpdate = (gameId, singleton) => {
 		let game = gameCollection.gameList[gameId];
 		let update = {
 			gameId: gameId,
@@ -258,7 +321,11 @@ io.on('connection', (socket) => {
 		if (game.phase !== "GUESS") {
 			update.guesses = game.guesses;
 		}
-		io.to(gameId).emit("gameUpdate", update);
+		if (!singleton) {
+			io.to(gameId).emit("gameUpdate", update);
+		} else {
+			socket.emit("gameUpdate", update);
+		}
 	}
 
 	var guessesMatch = (guess, sound) => {
@@ -330,8 +397,7 @@ io.on('connection', (socket) => {
 			let timeoutId = setTimeout(votePhase, calculateTimeout(game.timeoutEnd));
 
 			game.guessHandler = () => {
-				let playerCount = Object.keys(game.players).length;
-				if (game.guesses.length == playerCount + 1) {
+				if (game.guesses.length == getActivePlayerCount(gameId) + 1) {
 					clearTimeout(timeoutId);
 					// Everyone has guessed! Progress to vote phase.
 					votePhase();
@@ -352,7 +418,7 @@ io.on('connection', (socket) => {
 			let timeoutId = setTimeout(resultsPhase, calculateTimeout(game.timeoutEnd));
 
 			game.voteHandler = () => {
-				if (++game.votes == Object.keys(game.players).length) {
+				if (++game.votes == getActivePlayerCount(gameId)) {
 					clearTimeout(timeoutId);
 					// Everyone has voted! Progress to results phase.
 					resultsPhase();
@@ -426,7 +492,7 @@ io.on('connection', (socket) => {
 			game.skips = 0;
 			game.skipHandler = () => {
 				if (game.round == ROUND_COUNT) return;
-				if (++game.skips == Object.keys(game.players).length) {
+				if (++game.skips == getActivePlayerCount()) {
 					clearTimeout(timeoutId);
 					nextRound();
 				}

@@ -3,8 +3,9 @@ import { Container, Row, Col, Button,
 	OverlayTrigger, Tooltip } from 'react-bootstrap';
 import socket from '../socket';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faQuestionCircle, faHospitalSymbol } from '@fortawesome/free-solid-svg-icons';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import classnames from 'classnames';
 
 import Game from "./Game";
 
@@ -12,12 +13,14 @@ class Lobby extends Component {
 	constructor(props) {
 		super();
 		this.state = {
+			uid: socket.id,
 			gameId: props.gameId,
 			players: [],
 			gameStarted: false,
-			gamePlayed: false
+			gamePlayed: false,
 		};
-		this.exitLobby = this.exitLobby.bind(this);
+		this.leaveLobby = this.leaveLobby.bind(this);
+		this.closeLobby = this.closeLobby.bind(this);
 		this.startGame = this.startGame.bind(this);
 	}
 
@@ -25,12 +28,12 @@ class Lobby extends Component {
 		socket.emit("joinGame", this.state.gameId);
 
 		socket.on("joinSuccess", (data) => {
-			this.setState({isHost: data.isHost});
+			this.setState({host: data.host});
 		})
 
 		socket.on("joinFailure", (err) => {
 			console.log(err);
-			this.exitLobby();
+			this.closeLobby();
 		})
 
 		const markWinners = () => {
@@ -47,7 +50,10 @@ class Lobby extends Component {
 			let players = Object.values(data.players);
 			players.sort((a, b) => a.score < b.score ? 1 : -1);
 
-			this.setState({players: players});
+			this.setState({
+				host: data.host,
+				players: players
+			});
 			if (this.state.gamePlayed && !this.state.gameStarted) markWinners();
 		})
 
@@ -60,7 +66,7 @@ class Lobby extends Component {
 
 		socket.on("gameEnded", () => {
 			console.log("Game was ended by host.");
-			this.exitLobby();
+			this.closeLobby();
 		})
 
 		socket.on("gameFinished", () => {
@@ -80,9 +86,13 @@ class Lobby extends Component {
 		socket.off("gameFinished");
 	}
 
-	exitLobby() {
-		if (this.state.isHost) socket.emit("endGame", this.state.gameId);
+	leaveLobby() {
 		this.props.history.push("/");
+	}
+
+	closeLobby() {
+		if (this.state.uid === this.state.host) socket.emit("endGame", this.state.gameId);
+		this.leaveLobby();
 	}
 
 	startGame() {
@@ -94,13 +104,18 @@ class Lobby extends Component {
 	}
 
     render() {
-    	let leaveAction;
-   		if (this.state.gameStarted) {
-    		leaveAction = this.state.isHost ? "End Game" : "Leave Game";
-    	} else {
-    		leaveAction = this.state.isHost ? "Close Lobby" : "Exit Lobby";
-    	}
+    	let isHost = socket.id === this.state.host;
+
+    	let closeAction = this.state.gameStarted ? "End Game" : "Close Lobby";
+    	let leaveAction = this.state.gameStarted ? "Leave Game" : "Exit Lobby";
     	let startAction = this.state.gamePlayed ? "New Game" : "Start Game";
+    	let otherActivePlayers = false;
+
+    	for (let i in this.state.players) {
+    		let player = this.state.players[i];
+    		if (this.state.uid === player.uid) continue;
+    	 	otherActivePlayers = otherActivePlayers || !player.disconnected;
+    	}
 
 		let joinLink = `${process.env.REACT_APP_CLIENT_URL}/${this.state.gameId}`;
 		let joinLinkComponent = (
@@ -120,17 +135,22 @@ class Lobby extends Component {
 			      	<span className="align-middle">
 			      	Lobby: {this.state.gameId}&nbsp;
 			      	<br />
-			      	{this.state.isHost && joinLinkComponent}
+			      	{isHost && joinLinkComponent}
 			      	</span>
 			      </Col>
 			      <Col className="action-buttons" xs={12} sm="auto">
 			      	<Container>
 			      		<Row className="justify-content-sm-end justify-content-around">
+				      		{isHost && <Col className="action-button" xs="auto">
+				      			<Button className={!isHost ? "wide" : ""}
+				      				onClick={this.closeLobby}>{closeAction}</Button>
+				      		</Col>}
+				      		{(!isHost || (isHost && otherActivePlayers)) && 
 				      		<Col className="action-button" xs="auto">
-				      			<Button className={!this.state.isHost ? "wide" : ""}
-				      				onClick={this.exitLobby}>{leaveAction}</Button>
-				      		</Col>
-				      		{this.state.isHost && !this.state.gameStarted &&
+				      			<Button className={!isHost ? "wide" : ""}
+				      				onClick={this.leaveLobby}>{leaveAction}</Button>
+				      		</Col>}
+				      		{isHost && !this.state.gameStarted &&
 				      		<Col className="action-button" xs="auto">
 				      			<Button onClick={this.startGame}>{startAction}</Button>
 				      		</Col>}
@@ -142,9 +162,15 @@ class Lobby extends Component {
 					<Col className="pane player-pane" md="3">
 						<Container>
 						{this.state.players.map((player) => {
+							let playerIsHost = player.uid === this.state.host;
+							let hostIcon = (<FontAwesomeIcon className="host-icon" icon={faHospitalSymbol}/>);
+							let classes = ["player-info"];
+							
+							if (player.winner) classes.push("winner");
+							if (player.disconnected) classes.push("disconnected");
 							return (
-								<div key={player.uid} className={`player-info  ${player.winner ? "winner" : ""}`}>
-									{player.username}
+								<div key={player.uid} className={classnames(...classes)}>
+									{playerIsHost && hostIcon}{player.username}
 									{this.state.gamePlayed &&
 									<div className="player-score float-right">
 										{player.score}

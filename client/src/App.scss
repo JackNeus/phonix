@@ -11,6 +11,7 @@ $border-color-light: #95a5a6;
 $background: #ecf0f1;
 
 $green: #27ae60;
+$gray: #616161;
 
 body {
 	background-color: $background;
@@ -85,12 +86,20 @@ body {
 		.player-info {
 			font-size: 1.2em;
 
+			.host-icon {
+				margin-right: 0.25em;
+			}
+
 			.player-score {
 				font-weight: bold;
 
 				&.winner {
 					color: $green;
 				}
+			}
+			
+			&.disconnected {
+				color: $gray;
 			}
 
 			&.winner {
