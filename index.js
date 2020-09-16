@@ -63,14 +63,14 @@ const gameSounds = [
 	{uri: "bubbles.wav", answer: "bubbles"},
 	{uri: "can-stab.wav", answer: "tin cans"},
 	{uri: "cat-eating.ogg", answer: "cat eating"},
-	{uri: "child-tickle.mp3", answer: "laughing baby"},
+	{uri: "child-tickle.mp3", answer: "laughing baby", accept: ["baby", "baby laughing"]},
 	{uri: "frog-chirp.wav", answer: "frogs"},
 	{uri: "rhino.wav", answer: "rhino"},
-	{uri: "car-horn.wav", answer: "car alarm"},
+	{uri: "car-horn.wav", answer: "car alarm", accept: ["car", "car horn"]},
 	{uri: "ocean.wav", answer: "ocean"},
 	{uri: "elevator.wav", answer: "elevator"},
 	{uri: "subway.wav", answer: "subway"},
-	{uri: "alligator.mp3", answer: "baby allligator"},
+	{uri: "alligator.mp3", answer: "baby alligator"},
 	{uri: "monkey.wav", answer: "monkey"},
 	//{uri: "pancake-batter.wav", answer: "pancake batter"},
 	{uri: "microwave.wav", answer: "microwave"},
@@ -263,6 +263,11 @@ io.on('connection', (socket) => {
 	}
 
 	var guessesMatch = (guess, sound) => {
+		let u = (w) => {
+			return w.toLowerCase().trim();
+		}
+		guess = u(guess);
+		sound = u(sound);
 		if (guess === sound.answer) return true;
 		for (let i in sound.accept) {
 			if (guess === sound.accept[i]) return true;
