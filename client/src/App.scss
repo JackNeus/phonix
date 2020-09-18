@@ -82,6 +82,9 @@ body {
 		@include media-breakpoint-down('sm') {
 			margin-bottom: 0.5em;
 		}
+		padding-top: 1em;
+		padding-left: 0.25em;
+		padding-right: 0.25em;
 
 		.player-info {
 			font-size: 1.2em;
