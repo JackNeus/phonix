@@ -33,7 +33,11 @@ class Lobby extends Component {
 
 		socket.on("joinFailure", (err) => {
 			console.log(err);
-			this.closeLobby();
+			if (err.indexOf("username") !== -1) {
+				this.props.history.push(`/${this.state.gameId}`);
+			} else {
+				this.props.history.push("/");
+			}
 		})
 
 		const markWinners = () => {

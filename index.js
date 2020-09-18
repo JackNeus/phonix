@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
 		let games = gameCollection.gameList;
 		let gameList = Object.keys(games).map((gameId) => {
 			let game = games[gameId];
-			
+
 			return {
 				id: gameId,
 				host: game.hostUsername,
@@ -166,6 +166,9 @@ io.on('connection', (socket) => {
 		if (game == undefined) {
 			console.log(`...but ${gameId} does not exist`);
 			socket.emit("joinFailure", `${gameId} does not exist`);
+		} else if (socket.username === undefined) {
+			console.log(`...but username is undefined`);
+			socket.emit("joinFailure", `username is undefined`);
 		} else {
 			console.log("...success!");
 			game.players[socket.uid] = {
