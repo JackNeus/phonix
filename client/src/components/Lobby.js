@@ -174,7 +174,9 @@ class Lobby extends Component {
 							if (player.disconnected) classes.push("disconnected");
 							return (
 								<div key={player.uid} className={classnames(...classes)}>
-									{playerIsHost && hostIcon}{player.username}
+									<div className="player-name float-left">
+										{playerIsHost && hostIcon}{player.username}
+									</div>
 									{this.state.gamePlayed &&
 									<div className="player-score float-right">
 										{player.score}

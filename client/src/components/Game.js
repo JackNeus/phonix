@@ -168,7 +168,9 @@ class Game extends Component {
 					</Col>
 				</Row>
 				<Row className="sound-player justify-content-center">
-					<ReactAudioPlayer src={`${BASE_URL}/${this.state.sound}`} autoPlay controls/>
+					{this.state.sound !== undefined &&
+						<ReactAudioPlayer src={`${BASE_URL}/${this.state.sound}`} autoPlay controls/>
+					}
 				</Row>
 				{gamePane}
 			</Container>

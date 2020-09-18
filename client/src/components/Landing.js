@@ -104,7 +104,7 @@ class Landing extends Component {
 					<Col xs="auto">
 						What's your name?&nbsp;
 						<input className="usernameInput" type="text" 
-							maxLength="14"
+							maxLength="12"
 							name="username"
 							value={this.state.username} 
 							onChange={this.handleChange}
