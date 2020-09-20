@@ -8,6 +8,12 @@ var io = require('socket.io')(http);
 var path = require('path');
 var tsServer = require('timesync/server');
 var cors = require('cors');
+var passport = require("passport");
+var bodyParser = require("body-parser");
+const jsonParser = bodyParser.json();
+
+const users = require("./routes/users");
+
 var port = process.env.PORT || 5000;
 
 var server = http.listen(port, function() {
@@ -15,10 +21,15 @@ var server = http.listen(port, function() {
 	fs.writeFile(__dirname + '/start.log', 'started', (error) => {});
 });
 
+app.use(cors());
+app.use(passport.initialize());
+require("./config/passport")(passport);
+
 // Routing
+app.use("/", jsonParser, users);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.static(path.join(__dirname, "/client", "build")));
-app.use("/timesync", cors(), tsServer.requestHandler);
+app.use("/timesync", tsServer.requestHandler);
 
 app.get('/*', (req, res) => {
 	res.sendFile(path.join(__dirname, "client", "build", "index.html"));

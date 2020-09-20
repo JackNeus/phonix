@@ -121,7 +121,7 @@ class Lobby extends Component {
     	 	otherActivePlayers = otherActivePlayers || !player.disconnected;
     	}
 
-		let joinLink = `${process.env.REACT_APP_CLIENT_URL}/${this.state.gameId}`;
+		let joinLink = `${process.env.REACT_APP_CLIENT_URL}/l/${this.state.gameId}`;
 		let joinLinkComponent = (
 			<OverlayTrigger
 				key='join-link'
