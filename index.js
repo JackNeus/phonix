@@ -94,6 +94,27 @@ const getSound = (game) => {
 	return sound;
 }
 
+const guessesMatch = (guess, sound) => {
+	let u = (w) => {
+		if (w === undefined)
+			return "";
+		return w.toString().toLowerCase().replace(/\s+/g, '');
+	}
+	guess = u(guess);
+
+	// Sound is a simple string.
+	if (typeof sound === "string") {
+		return guess === u(sound);
+	}
+	// Sound is an object with answer and accept props.
+	let answer = u(sound.answer);
+	if (guess === answer) return true;
+	for (let i in sound.accept) {
+		if (guess === u(sound.accept[i])) return true;
+	}
+	return false;
+}
+
 io.on('connection', (socket) => {
 	console.log("Received connection from ", socket.id);
 
@@ -329,19 +350,6 @@ io.on('connection', (socket) => {
 		} else {
 			socket.emit("gameUpdate", update);
 		}
-	}
-
-	var guessesMatch = (guess, sound) => {
-		let u = (w) => {
-			return w.toLowerCase().trim();
-		}
-		guess = u(guess);
-		sound = u(sound);
-		if (guess === sound.answer) return true;
-		for (let i in sound.accept) {
-			if (guess === sound.accept[i]) return true;
-		}
-		return false;
 	}
 
 	var findWinners = (gameId) => {
