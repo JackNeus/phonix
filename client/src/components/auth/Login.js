@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import classnames from "classnames";
+
+import { Container, Row, Col, Button } from 'react-bootstrap';
 
 import axios from "axios";
 import { currentUser, handleLogin } from "../../utils/auth";
@@ -11,6 +12,7 @@ class Login extends Component {
       password: "",
       errors: {},
     };
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   onChange = (e) => {
@@ -54,45 +56,33 @@ class Login extends Component {
     const { errors } = this.state;
 
     return (
-      <div className="container">
-        <div style={{ marginTop: "4rem" }} className="row">
-          <div className="col s8 offset-s2">
-            <form noValidate onSubmit={this.onSubmit}>
-              <div className="input-field col s12">
-                <input
-                  onChange={this.onChange}
-                  value={this.state.password}
-                  error={errors.password}
-                  id="password"
-                  type="password"
-                  className={classnames("", {
-                    invalid: errors.password || errors.passwordincorrect,
-                  })}
-                />
-                <label htmlFor="password">Password</label>
-                <span className="red-text">
-                  {errors.password}
-                  {errors.passwordincorrect}
-                </span>
-              </div>
-              <div className="col s12" style={{ paddingLeft: "11.250px" }}>
-                <button
-                  style={{
-                    width: "150px",
-                    borderRadius: "3px",
-                    letterSpacing: "1.5px",
-                    marginTop: "1rem",
-                  }}
-                  type="submit"
-                  className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-                >
-                  Login
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <Container className="page-elt pane light login-pane">
+        <Row className="solid justify-content-center">
+          <Col xs="auto">
+            Admin Password: &nbsp;
+            <input
+              onChange={this.onChange}
+              value={this.state.password}
+              error={errors.password}
+              id="password"
+              type="password"
+            />
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col xs="auto">
+            <span className="red-text">
+              {errors.password}
+              {errors.passwordincorrect}
+            </span>
+          </Col>
+        </Row>
+        <Row className="login-btn justify-content-center">
+          <Col xs="auto">
+            <Button type="submit" onClick={this.onSubmit}>Login</Button>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 }

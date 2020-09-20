@@ -55,6 +55,16 @@ body {
 		}
 	}
 
+	.login-pane {
+		.red-text {
+			color: red;
+		}
+
+		.login-btn {
+			margin-top: 1em;
+		}
+	}
+
 	.lobby-info {
 		text-align: center;
 		height: auto;
@@ -102,10 +112,6 @@ body {
 
 			.player-score {
 				font-weight: bold;
-
-				&.winner {
-					color: $green;
-				}
 			}
 			
 			&.disconnected {
@@ -114,7 +120,7 @@ body {
 
 			&.winner {
 				font-weight: bold;
-				color: $red;
+				color: $green;
 			}
 		}
 	}
