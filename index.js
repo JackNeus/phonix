@@ -1,5 +1,6 @@
 // Setup server
 var express = require('express');
+const connectDB = require("./config/db");
 var app = express();
 var dotenv = require('dotenv').config();
 var fs = require('fs');
@@ -13,6 +14,7 @@ var bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
 
 const users = require("./routes/users");
+const admin = require("./routes/admin");
 
 var port = process.env.PORT || 5000;
 
@@ -21,12 +23,15 @@ var server = http.listen(port, function() {
 	fs.writeFile(__dirname + '/start.log', 'started', (error) => {});
 });
 
+connectDB();
+
 app.use(cors());
 app.use(passport.initialize());
 require("./config/passport")(passport);
 
 // Routing
 app.use("/", jsonParser, users);
+app.use("/api", jsonParser, admin);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.static(path.join(__dirname, "/client", "build")));
 app.use("/timesync", tsServer.requestHandler);
