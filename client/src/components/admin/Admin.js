@@ -141,9 +141,19 @@ class Admin extends Component {
 			});
 	}
 
+	handleReload() {
+		axios.post(`${API_ROOT}/reload`)
+			.catch((err) => {
+				console.log(err);
+			})
+	}
+
     render() {
         return (
         	<Container>
+        		<Row className="justify-content-center">
+		        	<Button onClick={this.handleReload}>Reload Phonix Sound Pack</Button>
+        		</Row>
 	        	<Row className="page-elt">
 	        		<Col className="admin-left-col">
 	        		  <div className="pane light add-edit-pane justify-content-center">

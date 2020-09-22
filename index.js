@@ -16,6 +16,16 @@ const fileUpload = require("express-fileupload");
 
 const users = require("./routes/users");
 const admin = require("./routes/admin");
+const Sound = require("./models/Sound");
+
+var gameSounds;
+const getSoundsFromDB = () => {
+	Sound.find({}).then((data) => {
+		console.log("(Re)loading sounds...");
+		gameSounds = data;
+	});
+}
+getSoundsFromDB();
 
 var port = process.env.PORT || 5000;
 
@@ -37,6 +47,14 @@ app.use("/api", jsonParser, admin);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.static(path.join(__dirname, "/client", "build")));
 app.use("/timesync", tsServer.requestHandler);
+
+app.post("/api/reload", 
+	passport.authenticate("user-strategy", { session: false }),
+	(req, res) => {
+		getSoundsFromDB();
+		res.status(200);
+	}
+);
 
 app.get('/*', (req, res) => {
 	res.sendFile(path.join(__dirname, "client", "build", "index.html"));
@@ -75,28 +93,6 @@ const ROUND_COUNT = process.env.ROUND_COUNT || 3;
 const POINTS_CORRECT_GUESS = 3;
 const POINTS_CORRECT_VOTE = 1;
 const POINTS_GOT_VOTE = 1;
-
-const gameSounds = [
-	{uri: "train.wav", answer: "train"},
-	{uri: "bubbles.wav", answer: "bubbles"},
-	{uri: "can-stab.wav", answer: "tin cans"},
-	{uri: "cat-eating.ogg", answer: "cat eating"},
-	{uri: "child-tickle.mp3", answer: "laughing baby", accept: ["baby", "baby laughing"]},
-	{uri: "frog-chirp.wav", answer: "frogs"},
-	{uri: "rhino.wav", answer: "rhino"},
-	{uri: "car-horn.wav", answer: "car alarm", accept: ["car", "car horn"]},
-	{uri: "ocean.wav", answer: "ocean"},
-	{uri: "elevator.wav", answer: "elevator"},
-	{uri: "subway.wav", answer: "subway"},
-	{uri: "alligator.mp3", answer: "baby alligator"},
-	{uri: "monkey.wav", answer: "monkey"},
-	//{uri: "pancake-batter.wav", answer: "pancake batter"},
-	{uri: "microwave.wav", answer: "microwave"},
-	{uri: "motorcycle.wav", answer: "motorcycle"},
-	{uri: "concrete-mixer.wav", answer: "concrete mixer"},
-	{uri: "keyboard.mp3", answer: "typing", accept: ["keyboard"]},
-	{uri: "cricket.m4a", answer: "crickets"},
-]
 
 const getSound = (game) => {
 	// If we've run out of sounds, reset used dictionary.
@@ -356,7 +352,7 @@ io.on('connection', (socket) => {
 			gameId: gameId,
 			round: game.round,
 			phase: game.phase,
-			sound: game.sound.uri,
+			sound: game.sound.filename,
 			timeoutStart: game.timeoutStart,
 			timeoutEnd: game.timeoutEnd,
 		};
