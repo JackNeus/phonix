@@ -255,37 +255,34 @@ body {
 		}
 
 		min-height: 500px;
-		.table-scroll {
-			height: 100%;
 
-			thead {
-				display: table;
-				width: 100%;
+		thead {
+			display: table;
+			width: 100%;
 
-				th.sound-th {
-					width: 50%;
+			th.sound-th {
+				width: 50%;
 
-					@include media-breakpoint-down('sm') {
-						width: 9%;
-						font-size: 0;
-					}
-				}
-
-				th.answer-th {
-					width: 15%;
-
-					@include media-breakpoint-down('sm') {
-						width: 29%
-					}
+				@include media-breakpoint-down('sm') {
+					width: 9%;
+					font-size: 0;
 				}
 			}
-			tbody {
-				display: block;
-				max-height: 75vh;
 
-				overflow-y: scroll;
-				@include scrollbars(.5em, $border-color-light, $foreground-light);
+			th.answer-th {
+				width: 15%;
+
+				@include media-breakpoint-down('sm') {
+					width: 29%
+				}
 			}
+		}
+		tbody {
+			display: block;
+			max-height: 72vh;
+
+			overflow-y: scroll;
+			@include scrollbars(.5em, $border-color-light, $foreground-light);
 		}
 
 		.edit-sound {
