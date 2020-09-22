@@ -1,4 +1,5 @@
 @import "~bootstrap/scss/bootstrap";
+@import "Scrollbar.scss";
 
 // Plette from https://flatuicolors.com/palette/defo
 $foreground: #3498db;
@@ -12,6 +13,7 @@ $background: #ecf0f1;
 
 $green: #27ae60;
 $gray: #616161;
+$blue: #007bff;
 
 body {
 	background-color: $background;
@@ -231,6 +233,10 @@ body {
 		.add-edit-pane {
 			height: auto;
 
+			.loading-icon {
+				margin-left: 0.5em;
+			}
+
 			.cancel-edit {
 				cursor: pointer;
 				margin-right: 0.25em;
@@ -245,6 +251,40 @@ body {
 			// TODO: Better looking mini player
 			@include media-breakpoint-down('sm') {
 				width: 20px;
+			}
+		}
+
+		min-height: 500px;
+		.table-scroll {
+			height: 100%;
+
+			thead {
+				display: table;
+				width: 100%;
+
+				th.sound-th {
+					width: 50%;
+
+					@include media-breakpoint-down('sm') {
+						width: 9%;
+						font-size: 0;
+					}
+				}
+
+				th.answer-th {
+					width: 15%;
+
+					@include media-breakpoint-down('sm') {
+						width: 29%
+					}
+				}
+			}
+			tbody {
+				display: block;
+				max-height: 75vh;
+
+				overflow-y: scroll;
+				@include scrollbars(.5em, $border-color-light, $foreground-light);
 			}
 		}
 

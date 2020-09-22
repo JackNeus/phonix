@@ -4,6 +4,7 @@ import axios from "axios";
 import ReactAudioPlayer from 'react-audio-player';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { ClipLoader } from 'react-spinners';
 
 const API_ROOT = `${process.env.REACT_APP_SERVER_URL}/api`;
 const BASE_SOUND_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
@@ -14,6 +15,7 @@ class Admin extends Component {
 		this.state = {
 			errors: {},
 			editSound: undefined,
+			loading: false,
 			answer: "",
 			accept: "",
 			sounds: []
@@ -43,6 +45,8 @@ class Admin extends Component {
 	}
 
 	getAcceptVals() {
+		if (this.state.accept.trim() === "") return [];
+
 		return this.state.accept.split(/\n+/)
 			.map(word => {
 			return word.toLowerCase().trim();
@@ -59,6 +63,7 @@ class Admin extends Component {
 		formData.append("answer", this.state.answer);
 		formData.append("accept", this.getAcceptVals());
 
+		this.setState({ loading: true });
 		axios.post(`${API_ROOT}/sound`, formData, {
 			headers: { "Content-Type" : "multipart/form-data" }
 		})
@@ -66,13 +71,15 @@ class Admin extends Component {
 				form.elements.file.value = null;
 				this.setState({
 					answer: "",
-					accept: ""
+					accept: "",
+					errors: {},
+					loading: false,
 				});
 
 				this.getSounds();
 			})
 			.catch((err) => {
-				console.log(err);
+				this.setState({ loading: false });
 				if (err.response)
 					this.setState({errors: err.response.data});
 			});
@@ -84,17 +91,28 @@ class Admin extends Component {
 		let formData = new FormData();
 
 		formData.append("answer", this.state.answer);
+		console.log(this.getAcceptVals());
 		formData.append("accept", this.getAcceptVals());
 
+		this.setState({
+			loading: true,
+		});
 		axios.put(`${API_ROOT}/sound/${this.state.editSound._id}`, formData, {
 			headers: { "Content-Type" : "multipart/form-data" }
 		})
 			.then((res) => {
+				this.setState({
+					errors: {},
+					loading: false
+				});
 				this.getSounds();
 			})
 			.catch((err) => {
 				console.log(err);
-				this.setState({errors: err.response.data});
+				this.setState({
+					loading: false,
+					errors: err.response.data
+				});
 			});
 	}
 
@@ -129,7 +147,7 @@ class Admin extends Component {
         	<Container>
 	        	<Row className="page-elt">
 	        		<Col className="admin-left-col">
-	        		  <div className="pane add-edit-pane justify-content-center">
+	        		  <div className="pane light add-edit-pane justify-content-center">
 	        			<h5>
 	        				{this.state.editSound && 
 	        					<FontAwesomeIcon className="cancel-edit" icon={faArrowLeft} onClick={this.clearEdit}/>}
@@ -164,20 +182,30 @@ class Admin extends Component {
 	        						onChange={this.handleChange}
 	        						value={this.state.accept}/>
 	        				</Form.Group>
-	        				<Button type="submit">
-	        					{this.state.editSound ? "Edit Sound" : "Add Sound"}
-	        				</Button>
+	        				<div className="d-flex flex-wrap align-content-center">
+		        				<Button type="submit">
+		        					{this.state.editSound ? "Edit Sound" : "Add Sound"}
+		        				</Button>
+		        				<span className="loading-icon">
+			    					<ClipLoader
+			    						size={30}
+			    						color={"#3498db"}
+			    						loading={this.state.loading}
+			    					/>
+			    				</span>
+			    			</div>
 		        		</Form>
 		        	  </div>
 	        		</Col>
 	        		{/* TODO: responsive */}
 	        		<Col className="pane sound-pane">
+	        		  <div className="table-scroll">
 	        			<Table>
 		        			<thead>
 								<tr>
-									<th>Sound</th>
-									<th>Answer</th>
-									<th>Accept</th>
+									<th className="sound-th">Sound</th>
+									<th className="answer-th">Answer</th>
+									<th className="accept-th">Accept</th>
 									<th></th>
 									<th></th>
 									<th></th>
@@ -209,6 +237,7 @@ class Admin extends Component {
 								})}
 							</tbody>
 	        			</Table>
+	        		  </div>
 	        		</Col>
 	        	</Row>
 	        </Container>

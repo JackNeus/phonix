@@ -41,12 +41,13 @@ router.post("/sound",
 			console.log(errors);
 			return res.status(400).json(errors);
 		}
-
+		console.log(req.body.accept);
 		let newSound = new Sound({
 			filename: `.${req.files.file.name.split(".").pop()}`,
 			answer: req.body.answer,
-			accept: req.body.accept
+			accept: req.body.accept,
 		});
+
 		newSound
 			.save()
 			.then((sound) => {
@@ -85,11 +86,11 @@ router.put("/sound/:id",
 			console.log(errors);
 			return res.status(400).json(errors);
 		}
-
+		
 		Sound.findOne({_id: req.params.id}).then((sound) => {
 			if (!sound) return res.status(400).json(soundnotfound);
 			sound.answer = req.body.answer;
-			sound.accept = req.body.accept;
+			sound.accept = req.body.accept.split(",");
 			sound.save();
 			res.json(sound);
 		});
