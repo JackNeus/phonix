@@ -128,8 +128,8 @@ class Admin extends Component {
         return (
         	<Container>
 	        	<Row className="page-elt">
-	        		<Col md="4">
-	        		  <div className="pane left-pane add-edit-pane justify-content-center">
+	        		<Col className="admin-left-col">
+	        		  <div className="pane add-edit-pane justify-content-center">
 	        			<h5>
 	        				{this.state.editSound && 
 	        					<FontAwesomeIcon className="cancel-edit" icon={faArrowLeft} onClick={this.clearEdit}/>}

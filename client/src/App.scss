@@ -85,19 +85,17 @@ body {
 		}
 	}
 
-	.left-pane {
+	.player-pane {
+		padding-top: 1em;
+		padding-left: 0.25em;
+		padding-right: 0.25em;
+
 		@include media-breakpoint-up('md') {
 			margin-right: 0.5em;
 		}
 		@include media-breakpoint-down('sm') {
 			margin-bottom: 0.5em;
 		}
-	}
-
-	.player-pane {
-		padding-top: 1em;
-		padding-left: 0.25em;
-		padding-right: 0.25em;
 
 		.player-info {
 			font-size: 1.2em;
@@ -220,18 +218,34 @@ body {
 		}
 	}
 
-	.add-edit-pane {
-		height: auto;
+
+	.admin-left-col {
+		padding-left: 0;
+		padding-right: 0;
 		
-		.cancel-edit {
-			cursor: pointer;
-			margin-right: 0.25em;
+		@include media-breakpoint-up('lg')  {
+			margin-right: 0.5em;
+		}
+		margin-bottom: 0.5em;
+
+		.add-edit-pane {
+			height: auto;
+
+			.cancel-edit {
+				cursor: pointer;
+				margin-right: 0.25em;
+			}
 		}
 	}
 
 	.sound-pane {
 		.audio-player {
 			height: 2em;
+
+			// TODO: Better looking mini player
+			@include media-breakpoint-down('sm') {
+				width: 20px;
+			}
 		}
 
 		.edit-sound {
