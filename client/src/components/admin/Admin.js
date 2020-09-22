@@ -91,7 +91,6 @@ class Admin extends Component {
 		let formData = new FormData();
 
 		formData.append("answer", this.state.answer);
-		console.log(this.getAcceptVals());
 		formData.append("accept", this.getAcceptVals());
 
 		this.setState({

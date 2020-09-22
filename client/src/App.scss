@@ -225,13 +225,14 @@ body {
 		padding-left: 0;
 		padding-right: 0;
 		
-		@include media-breakpoint-up('lg')  {
+		@include media-breakpoint-up('xl')  {
 			margin-right: 0.5em;
 		}
 		margin-bottom: 0.5em;
 
 		.add-edit-pane {
 			height: auto;
+			min-width: 250px;
 
 			.loading-icon {
 				margin-left: 0.5em;
@@ -255,35 +256,6 @@ body {
 		}
 
 		min-height: 500px;
-
-		thead {
-			display: table;
-			width: 100%;
-
-			th.sound-th {
-				width: 50%;
-
-				@include media-breakpoint-down('sm') {
-					width: 9%;
-					font-size: 0;
-				}
-			}
-
-			th.answer-th {
-				width: 15%;
-
-				@include media-breakpoint-down('sm') {
-					width: 29%
-				}
-			}
-		}
-		tbody {
-			display: block;
-			max-height: 72vh;
-
-			overflow-y: scroll;
-			@include scrollbars(.5em, $border-color-light, $foreground-light);
-		}
 
 		.edit-sound {
 			cursor: pointer;
