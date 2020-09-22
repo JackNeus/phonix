@@ -85,13 +85,16 @@ body {
 		}
 	}
 
-	.player-pane {
+	.left-pane {
 		@include media-breakpoint-up('md') {
 			margin-right: 0.5em;
 		}
 		@include media-breakpoint-down('sm') {
 			margin-bottom: 0.5em;
 		}
+	}
+
+	.player-pane {
 		padding-top: 1em;
 		padding-left: 0.25em;
 		padding-right: 0.25em;
@@ -214,6 +217,16 @@ body {
 			.vote-count {
 				float: right;
 			}
+		}
+	}
+
+	.sound-pane {
+		.audio-player {
+			height: 2em;
+		}
+
+		.delete-sound {
+			cursor: pointer;
 		}
 	}
 }

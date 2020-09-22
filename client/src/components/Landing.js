@@ -108,7 +108,8 @@ class Landing extends Component {
 							name="username"
 							value={this.state.username} 
 							onChange={this.handleChange}
-							onBlur={this.setUsername} />
+							onBlur={this.setUsername} 
+							autoComplete="off" />
 					</Col>
 				</Row>
 				<Row className='page-elt pane light lobby-buttons justify-content-center'>

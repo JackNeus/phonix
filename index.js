@@ -12,6 +12,7 @@ var cors = require('cors');
 var passport = require("passport");
 var bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
+const fileUpload = require("express-fileupload");
 
 const users = require("./routes/users");
 const admin = require("./routes/admin");
@@ -26,6 +27,7 @@ var server = http.listen(port, function() {
 connectDB();
 
 app.use(cors());
+app.use(fileUpload());
 app.use(passport.initialize());
 require("./config/passport")(passport);
 

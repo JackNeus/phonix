@@ -107,7 +107,8 @@ class Game extends Component {
 			<div>
 				Your guess: <input type="text" 
 					disabled={this.state.guess !== false}
-					onKeyDown={this.handleSubmitGuess} />
+					onKeyDown={this.handleSubmitGuess}
+					autoComplete="off" />
 			</div>);
 		} else if (inVotePhase || inResultsPhase) {
 			let table = (

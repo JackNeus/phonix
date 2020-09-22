@@ -163,7 +163,7 @@ class Lobby extends Component {
 			      </Col>
 				</Row>
 				<Row className="page-elt">
-					<Col className="pane player-pane" md="3">
+					<Col className="pane player-pane left-pane" md="3">
 						<Container>
 						{this.state.players.map((player) => {
 							let playerIsHost = player.uid === this.state.host;
