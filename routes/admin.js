@@ -9,7 +9,7 @@ const path = require("path");
 const passport = require("passport");
 
 const Sound = require("../models/Sound");
-const validateSoundInput = require("../validation/sound");
+const validate = require("../validation/sound");
 
 const soundnotfound = { sound: "Sound not found." };
 
@@ -35,8 +35,7 @@ router.get("/sounds",
 router.post("/sound",
 	passport.authenticate("user-strategy", { session: false }),
 	(req, res) => {
-		console.log(req.body, req.files);
-		const { errors, isValid } = validateSoundInput(req.body, req.files);
+		const { errors, isValid } = validate.validateAddSound(req.body, req.files);
 
 		if (!isValid) {
 			console.log(errors);
@@ -71,6 +70,29 @@ router.post("/sound",
 				console.log(err);
 				res.send(500);
 			});
+	}
+);
+
+// @route POST api/sound/:id
+// @desc Edit sound
+// @access Private
+router.put("/sound/:id",
+	passport.authenticate("user-strategy", { session: false }),
+	(req, res) => {
+		const { errors, isValid } = validate.validateEditSound(req.body);
+
+		if (!isValid) {
+			console.log(errors);
+			return res.status(400).json(errors);
+		}
+
+		Sound.findOne({_id: req.params.id}).then((sound) => {
+			if (!sound) return res.status(400).json(soundnotfound);
+			sound.answer = req.body.answer;
+			sound.accept = req.body.accept;
+			sound.save();
+			res.json(sound);
+		});
 	}
 );
 

@@ -220,9 +220,22 @@ body {
 		}
 	}
 
+	.add-edit-pane {
+		height: auto;
+		
+		.cancel-edit {
+			cursor: pointer;
+			margin-right: 0.25em;
+		}
+	}
+
 	.sound-pane {
 		.audio-player {
 			height: 2em;
+		}
+
+		.edit-sound {
+			cursor: pointer;
 		}
 
 		.delete-sound {
