@@ -16,6 +16,7 @@ const fileUpload = require("express-fileupload");
 
 const users = require("./routes/users");
 const admin = require("./routes/admin");
+const initChat = require("./chat");
 const Sound = require("./models/Sound");
 
 var gameSounds;
@@ -59,6 +60,8 @@ app.post("/api/reload",
 app.get('/*', (req, res) => {
 	res.sendFile(path.join(__dirname, "client", "build", "index.html"));
 })
+
+initChat(io);
 
 var gameCollection = new function() {
 	this.gameList = {};

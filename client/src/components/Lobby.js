@@ -8,6 +8,8 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import classnames from 'classnames';
 
 import Game from "./Game";
+import Chat from "./Chat";
+
 
 class Lobby extends Component {
 	constructor(props) {
@@ -18,6 +20,7 @@ class Lobby extends Component {
 			players: [],
 			gameStarted: false,
 			gamePlayed: false,
+			chatCollapsed: false,
 		};
 		this.leaveLobby = this.leaveLobby.bind(this);
 		this.closeLobby = this.closeLobby.bind(this);
@@ -214,6 +217,7 @@ class Lobby extends Component {
 							</OverlayTrigger>
 						</div>
 					</Col>
+					<Chat collapsed={this.state.chatCollapsed} />
 				</Row>
 			</Container>
         )
