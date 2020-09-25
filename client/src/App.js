@@ -13,7 +13,7 @@ import Landing from "./components/Landing";
 import Lobby from "./components/Lobby";
 import Admin from "./components/admin/Admin";
 
-// Check for token to keep user logged in
+// Check for token to keep admin logged in
 if (localStorage.jwtToken) {
   console.log("Found token, restoring session");
   let decoded = handleLogin(localStorage.jwtToken);

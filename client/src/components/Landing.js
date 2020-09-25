@@ -11,7 +11,7 @@ const names = ["Craig", "Jeffrey", "Klaus", "Velma", "Oscar", "Thomas", "Lizzy"]
 const getRandomName = () => {
 	return names[Math.floor(Math.random() * names.length)];
 }
-const defaultUsername = getRandomName();
+const defaultUsername = localStorage.username ? localStorage.username : getRandomName();
 
 class Landing extends Component {
 	constructor(props) {
@@ -74,6 +74,7 @@ class Landing extends Component {
 	}
 
 	setUsername(e) {
+		localStorage.username = this.state.username;
 		socket.emit('setUsername', this.state.username);
 	}
 

@@ -258,6 +258,23 @@ body {
 				min-height: 150px;
 				flex-grow: 1;
 				background: white;
+				padding: 0.25em;
+
+				.msg {
+					max-width: 180px;
+					clear: both;
+					word-break: break-all;
+
+					.name {
+						font-weight: bold;
+						display: inline;
+					}
+
+					&.self-msg {
+						float: right;
+						text-align: right;
+					}
+				}
 			}
 
 			.chat-box, .message-box {

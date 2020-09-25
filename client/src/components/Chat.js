@@ -9,19 +9,44 @@ class Chat extends Component {
 	constructor(props) {
 		super();
 		this.state = {
-			collapsed: props.collapsed
+			collapsed: props.collapsed,
+			chat: [],
 		};
 		this.toggleChat = this.toggleChat.bind(this);
+		this.handleChange = this.handleChange.bind(this);
 	}
 
 	componentDidMount() {
+		socket.on("chatMessage", (data) => {
+			let chat = this.state.chat;
+			chat.push(data);
+			chat.sort((x, y) => { return x.time < y.time });
+			this.setState({
+				chat: chat
+			});
+		});
+	}
 
+	componentWillUnmount() {
+		socket.off("chatMessage");
 	}
 
 	toggleChat(state) {
 		this.setState({
 			collapsed: state,
 		});
+	}
+
+	handleChange(e) {
+		if (e.key === "Enter") {
+			socket.emit("sendMessage", {
+				id: socket.id,
+				username: localStorage.username,
+				message: e.target.value,
+			});
+			e.target.value = "";
+			e.preventDefault();
+		}
 	}
 
 	render() {
@@ -44,9 +69,16 @@ class Chat extends Component {
 								onClick={() => this.toggleChat(true)}/>
 						</div>
 						<div className="chat-box">
-
+							{this.state.chat.map((message) => {
+								let classes = message.id === socket.id ? "msg self-msg" : "msg";
+								return (
+									<div className={classes}><span className="name">{message.username}: </span>{message.message}</div>
+								);
+							})}
 						</div>
-						<input className="message-box" name="message" type="text"/>
+						<input className="message-box" name="message" type="text"
+							autoComplete="off"
+							onKeyDown={this.handleChange}/>
 					</span>
 					)
 				}
