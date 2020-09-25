@@ -12,6 +12,16 @@ const SoundSchema = new mongoose.Schema({
 	accept: {
 		type: [String],
 		required: false,
+	},
+	is_identify: {
+		type: Boolean,
+		default: true,
+		required: false,
+	},
+	is_creative: {
+		type: Boolean,
+		default: false,
+		required: false,
 	}
 });
 

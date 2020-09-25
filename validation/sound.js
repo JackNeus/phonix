@@ -27,6 +27,13 @@ module.exports = {
 			errors.answer = "Answer is required";
 		}
 
+		if (data.is_identify === undefined) {
+			errors.is_identify = "Game mode is required";
+		}
+		if (data.is_creative === undefined) {
+			errors.is_creative = "Game mode is required";
+		}
+
 		return {
 			errors,
 			isValid: isEmpty(errors)
@@ -37,10 +44,6 @@ module.exports = {
 
 		data.answer = !isEmpty(data.answer) ? data.answer : "";
 		data.accept = !isEmpty(data.accept) ? data.accept : [];
-
-		if (Validator.isEmpty(data.answer)) {
-			errors.answer = "Answer is required";
-		}
 
 		return {
 			errors,

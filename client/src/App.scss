@@ -312,6 +312,10 @@ body {
 			height: auto;
 			min-width: 250px;
 
+			input[type="checkbox"] {
+				cursor: pointer;
+			}
+		
 			.loading-icon {
 				margin-left: 0.5em;
 			}
@@ -326,6 +330,7 @@ body {
 	.sound-pane {
 		.table-scroll {
 			overflow-x: scroll;
+			@include scrollbars(0.5em, $foreground-light, $border-color);
 		}
 
 		.audio-player {
@@ -335,6 +340,10 @@ body {
 			@include media-breakpoint-down('sm') {
 				width: 20px;
 			}
+		}
+
+		input[type="checkbox"] {
+			cursor: pointer;
 		}
 
 		min-height: 500px;

@@ -9,6 +9,13 @@ import { ClipLoader } from 'react-spinners';
 const API_ROOT = `${process.env.REACT_APP_SERVER_URL}/api`;
 const BASE_SOUND_URL = `${process.env.REACT_APP_SERVER_URL}/assets/`;
 
+const defaultValues = {
+	answer: "",
+	accept: "",
+	is_identify: true,
+	is_creative: false,
+};
+
 class Admin extends Component {
 	constructor(props) {
 		super();
@@ -16,9 +23,8 @@ class Admin extends Component {
 			errors: {},
 			editSound: undefined,
 			loading: false,
-			answer: "",
-			accept: "",
-			sounds: []
+			sounds: [],
+			...defaultValues
 		};
 		this.getSounds = this.getSounds.bind(this);
 		this.editSound = this.editSound.bind(this);
@@ -26,6 +32,7 @@ class Admin extends Component {
 		this.deleteSound = this.deleteSound.bind(this);
 		this.handleSubmitAdd = this.handleSubmitAdd.bind(this);
 		this.handleSubmitEdit = this.handleSubmitEdit.bind(this);
+		this.handleQuickEdit = this.handleQuickEdit.bind(this);
 		this.handleChange = this.handleChange.bind(this);
 		this.getAcceptVals = this.getAcceptVals.bind(this);
 	}
@@ -35,7 +42,8 @@ class Admin extends Component {
 	}
 
 	handleChange(e) {
-		this.setState({[e.target.name] : e.target.value});
+		let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+		this.setState({[e.target.name] : value});
 	}
 
 	getSounds() {
@@ -62,6 +70,8 @@ class Admin extends Component {
 		formData.append("file", form.elements.file.files[0]);
 		formData.append("answer", this.state.answer);
 		formData.append("accept", this.getAcceptVals());
+		formData.append("is_identify", this.state.is_identify);
+		formData.append("is_creative", this.state.is_creative);
 
 		this.setState({ loading: true });
 		axios.post(`${API_ROOT}/sound`, formData, {
@@ -70,8 +80,7 @@ class Admin extends Component {
 			.then((res) => {
 				form.elements.file.value = null;
 				this.setState({
-					answer: "",
-					accept: "",
+					...defaultValues,
 					errors: {},
 					loading: false,
 				});
@@ -88,17 +97,17 @@ class Admin extends Component {
 	handleSubmitEdit(e) {
 		e.preventDefault();
 
-		let formData = new FormData();
-
-		formData.append("answer", this.state.answer);
-		formData.append("accept", this.getAcceptVals());
+		let data = {
+			answer: this.state.answer,
+			accept: this.getAcceptVals(),
+			is_identify: this.state.is_identify,
+			is_creative: this.state.is_creative
+		}
 
 		this.setState({
 			loading: true,
 		});
-		axios.put(`${API_ROOT}/sound/${this.state.editSound._id}`, formData, {
-			headers: { "Content-Type" : "multipart/form-data" }
-		})
+		axios.put(`${API_ROOT}/sound/${this.state.editSound._id}`, data)
 			.then((res) => {
 				this.setState({
 					errors: {},
@@ -115,11 +124,29 @@ class Admin extends Component {
 			});
 	}
 
+	handleQuickEdit(e, sound) {
+		let data = {
+			[e.target.name]: e.target.checked
+		};
+		axios.put(`${API_ROOT}/sound/${sound._id}`, data)
+			.then((res) => {
+				this.getSounds();
+			});
+
+		if (this.state.editSound && sound._id === this.state.editSound._id) {
+			this.setState({
+				[e.target.name]: e.target.checked
+			});
+		}
+	}
+
 	editSound(sound) {
 		this.setState({ 
 			editSound: sound,
 			answer: sound.answer,
 			accept: sound.accept.join("\n"),
+			is_identify: sound.is_identify,
+			is_creative: sound.is_creative
 		});
 	}
 
@@ -191,6 +218,18 @@ class Admin extends Component {
 	        						onChange={this.handleChange}
 	        						value={this.state.accept}/>
 	        				</Form.Group>
+	        				<Form.Group>
+	        					<Form.Check name="is_identify" 
+	        						checked={this.state.is_identify} 
+	        						onChange={this.handleChange}
+	        						label="Identify" />
+	        					{this.state.errors.is_identify && <Form.Text>{this.state.errors.is_identify}</Form.Text>}
+	        					<Form.Check name="is_creative"
+	        						checked={this.state.is_creative}
+	        						onChange={this.handleChange}
+	        						label="Creative" />
+	        					{this.state.errors.is_creative && <Form.Text>{this.state.errors.is_creative}</Form.Text>}
+	        				</Form.Group>
 	        				<div className="d-flex flex-wrap align-content-center">
 		        				<Button type="submit">
 		        					{this.state.editSound ? "Edit Sound" : "Add Sound"}
@@ -215,7 +254,8 @@ class Admin extends Component {
 									<th className="sound-th">Sound</th>
 									<th className="answer-th">Answer</th>
 									<th className="accept-th">Accept</th>
-									<th></th>
+									<th>Identify</th>
+									<th>Creative</th>
 									<th></th>
 									<th></th>
 								</tr>
@@ -232,7 +272,18 @@ class Admin extends Component {
 											</td>
 											<td>{sound.answer}</td>
 											<td>{sound.accept.join(",")}</td>
-											<td></td>
+											<td>
+												<Form.Check type="checkbox" 
+													name="is_identify"
+													checked={sound.is_identify}
+													onChange={(e) => {this.handleQuickEdit(e, sound)}}/>												
+											</td>
+											<td>
+												<Form.Check type="checkbox" 
+													name="is_creative"
+													checked={sound.is_creative}
+													onChange={(e) => {this.handleQuickEdit(e, sound)}}/>	
+											</td>
 											<td><FontAwesomeIcon className="edit-sound"
 												icon={faEdit}
 												onClick={() => this.editSound(sound)}

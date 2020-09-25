@@ -46,6 +46,8 @@ router.post("/sound",
 			filename: `.${req.files.file.name.split(".").pop()}`,
 			answer: req.body.answer,
 			accept: req.body.accept,
+			is_identify: req.body.is_identify,
+			is_creative: req.body.is_creative,
 		});
 
 		newSound
@@ -74,7 +76,7 @@ router.post("/sound",
 	}
 );
 
-// @route POST api/sound/:id
+// @route PUT api/sound/:id
 // @desc Edit sound
 // @access Private
 router.put("/sound/:id",
@@ -89,8 +91,10 @@ router.put("/sound/:id",
 		
 		Sound.findOne({_id: req.params.id}).then((sound) => {
 			if (!sound) return res.status(400).json(soundnotfound);
-			sound.answer = req.body.answer;
-			sound.accept = req.body.accept.split(",");
+			if (req.body.answer) sound.answer = req.body.answer;
+			if (req.body.accept) sound.accept = req.body.accept;
+			if (req.body.is_identify !== undefined) sound.is_identify = req.body.is_identify;
+			if (req.body.is_creative !== undefined) sound.is_creative = req.body.is_creative;
 			sound.save();
 			res.json(sound);
 		});
