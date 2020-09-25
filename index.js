@@ -529,7 +529,7 @@ io.on('connection', (socket) => {
 			game.skips = 0;
 			game.skipHandler = () => {
 				if (game.round == ROUND_COUNT) return;
-				if (++game.skips == getActivePlayerCount()) {
+				if (++game.skips == getActivePlayerCount(gameId)) {
 					clearTimeout(timeoutId);
 					nextRound();
 				}
