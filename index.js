@@ -267,7 +267,9 @@ io.on('connection', (socket) => {
 				if (game.host == player) {
 					assignNewHost(gameId);
 				}
-				sendPlayerUpdate(gameId);
+				if (gameId in gameCollection.gameList) {
+					sendPlayerUpdate(gameId);
+				}
 			}
 		}
 		sendGamesList();

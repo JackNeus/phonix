@@ -11,11 +11,12 @@ const names = ["Craig", "Jeffrey", "Klaus", "Velma", "Oscar", "Thomas", "Lizzy"]
 const getRandomName = () => {
 	return names[Math.floor(Math.random() * names.length)];
 }
-const defaultUsername = localStorage.username ? localStorage.username : getRandomName();
+const defaultUsername = localStorage.setUsername === true ? localStorage.username : getRandomName();
 
 class Landing extends Component {
 	constructor(props) {
 		super();
+
 		// inviteId: initial joinId
 		this.state = {
 			username: defaultUsername,
@@ -25,8 +26,7 @@ class Landing extends Component {
 			publicGame: true,
 			gameList: []
 		};
-
-		this.handleChange = this.handleChange.bind(this);
+		this.handleUsernameChange = this.handleUsernameChange.bind(this);
 		this.handleCheck = this.handleCheck.bind(this);
 		this.setUsername = this.setUsername.bind(this);
 		this.handleCreateGame = this.handleCreateGame.bind(this);
@@ -65,8 +65,9 @@ class Landing extends Component {
 		socket.off("gameList");
 	}
 
-	handleChange(e) {
+	handleUsernameChange(e) {
 		this.setState({[e.target.name] : [e.target.value]});
+		localStorage.setUsername = true;
 	}
 
 	handleCheck(e) {
@@ -108,7 +109,7 @@ class Landing extends Component {
 							maxLength="12"
 							name="username"
 							value={this.state.username} 
-							onChange={this.handleChange}
+							onChange={this.handleUsernameChange}
 							onBlur={this.setUsername} 
 							autoComplete="off" />
 					</Col>

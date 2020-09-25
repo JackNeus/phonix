@@ -38,6 +38,12 @@ body {
 	.phonix > h1 {
 		margin-bottom: 0;
 		font-family: "Courier New", Courier, monospace;
+		cursor: pointer;
+
+		a {
+			color: inherit;
+			text-decoration: inherit;
+		}
 	}
 
 	.game-list {
@@ -318,6 +324,10 @@ body {
 	}
 
 	.sound-pane {
+		.table-scroll {
+			overflow-x: scroll;
+		}
+
 		.audio-player {
 			height: 2em;
 

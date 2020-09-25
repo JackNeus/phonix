@@ -32,7 +32,7 @@ function App() {
   return (
     <Container>
       <Row className="page-elt phonix justify-content-center">
-        <h1>Phonix</h1>
+        <h1><a href="/">Phonix</a></h1>
       </Row>
       <Router>
         <div className="App">
