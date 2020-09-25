@@ -140,6 +140,20 @@ body {
 			margin-right: 1em;
 			height: 2.5em;
 		}
+
+		.public-game {
+			margin-right: 0.25em;
+		}
+
+		.game-mode, .public-game {
+			margin: 0.25em;
+			padding: 0.25em;
+			border: 1px solid $border-color-light;
+			border-radius: 5px;
+			span {
+				display: inline-block;
+			}
+		}
 	}
 	
 	.action-buttons {
@@ -315,7 +329,7 @@ body {
 			input[type="checkbox"] {
 				cursor: pointer;
 			}
-		
+
 			.loading-icon {
 				margin-left: 0.5em;
 			}

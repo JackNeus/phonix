@@ -88,6 +88,8 @@ const calculateTimeout = (endTime) => {
 	return endTime - tsNow();
 }
 
+const GAMEMODE_IDENTIFY = "identify";
+const GAMEMODE_CREATIVE = "creative";
 const TIMEOUT_GUESS = process.env.TIMEOUT_GUESS || 45;
 const TIMEOUT_VOTE = process.env.TIMEOUT_VOTE || 30;
 const TIMEOUT_RESULTS = process.env.TIMEOUT_RESULTS || 15;
@@ -103,10 +105,14 @@ const getSound = (game) => {
 		game.usedSounds = new Set();
 	}
 
-	var sound;
+	let isIdentify = game.gameMode === GAMEMODE_IDENTIFY;
+	let isCreative = game.gameMode === GAMEMODE_CREATIVE;
+
+	var sound, correctMode;
 	do {
 		sound = gameSounds[Math.floor(Math.random() * gameSounds.length)];
-	} while (game.usedSounds.has(sound));
+		correctMode = isIdentify && sound.is_identify || isCreative && sound.is_creative;
+	} while (correctMode && game.usedSounds.has(sound));
 	game.usedSounds.add(sound);
 	return sound;
 }
@@ -178,7 +184,7 @@ io.on('connection', (socket) => {
 		}
 
 		var gameId = (Math.random()+1).toString(36).slice(2, 18);
-     	console.log("Game Created by "+ socket.username + " w/ " + gameId);
+     	console.log(data.gameMode + " game created by "+ socket.username + " w/ " + gameId);
 		gameCollection.gameList[gameId] = {
 			host: socket.uid,
 			hostUsername: socket.username,
@@ -186,6 +192,7 @@ io.on('connection', (socket) => {
 			public: data.public,
 			players: {},
 			round: 0,
+			gameMode: data.gameMode || GAMEMODE_IDENTIFY,
 			usedSounds: new Set()
 		};
 		gameCollection.gameList[gameId].players[socket.uid] = {

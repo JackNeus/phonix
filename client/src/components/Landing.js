@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, Button,
-	Table } from 'react-bootstrap';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import { Container, Row, Col, Button, Table } from 'react-bootstrap';
+import Switch from "react-switch";
 
 import socket from '../socket';
 
@@ -12,6 +9,9 @@ const getRandomName = () => {
 	return names[Math.floor(Math.random() * names.length)];
 }
 const defaultUsername = localStorage.setUsername === true ? localStorage.username : getRandomName();
+
+const IDENTIFY_GAMEMODE = "identify";
+const CREATIVE_GAMEMODE = "creative";
 
 class Landing extends Component {
 	constructor(props) {
@@ -24,14 +24,16 @@ class Landing extends Component {
 			joinId: props.joinId ? props.joinId : "",
 			errorMsg: "",
 			publicGame: true,
-			gameList: []
+			gameList: [],
+			gameMode: IDENTIFY_GAMEMODE,
 		};
 		this.handleUsernameChange = this.handleUsernameChange.bind(this);
-		this.handleCheck = this.handleCheck.bind(this);
+		this.handlePublicGame = this.handlePublicGame.bind(this);
 		this.setUsername = this.setUsername.bind(this);
 		this.handleCreateGame = this.handleCreateGame.bind(this);
 		this.handleSelectGame = this.handleSelectGame.bind(this);
 		this.handleJoinGame = this.handleJoinGame.bind(this);
+		this.toggleGameMode = this.toggleGameMode.bind(this);
 	}
 
 	componentDidMount() {
@@ -70,8 +72,10 @@ class Landing extends Component {
 		localStorage.setUsername = true;
 	}
 
-	handleCheck(e) {
-		this.setState({[e.target.name] : e.target.checked});
+	handlePublicGame(checked) {
+		this.setState({
+			publicGame: checked
+		});
 	}
 
 	setUsername(e) {
@@ -81,7 +85,8 @@ class Landing extends Component {
 
 	handleCreateGame(e) {
 		this.setUsername();
-		socket.emit('makeGame', {public: this.state.publicGame}, (gameId) => {
+		socket.emit('makeGame', {public: this.state.publicGame,	gameMode: this.state.gameMode},
+			(gameId) => {
 			this.props.history.push(`/lobby/${gameId}`);
 		});
 	}
@@ -99,7 +104,20 @@ class Landing extends Component {
 		this.props.history.push(`/lobby/${this.state.joinId}`);
 	}
 
+	toggleGameMode() {
+		if (this.state.gameMode === IDENTIFY_GAMEMODE) {
+			this.setState({
+				gameMode: CREATIVE_GAMEMODE
+			});
+		} else {
+			this.setState({
+				gameMode: IDENTIFY_GAMEMODE
+			});
+		}
+	}
+
     render() {
+    	let switchChecked = this.state.gameMode === CREATIVE_GAMEMODE;
         return (
         	<Container>
 		      	<Row className="page-elt pane nickname-pane solid justify-content-center">
@@ -116,17 +134,33 @@ class Landing extends Component {
 				</Row>
 				<Row className='page-elt pane light lobby-buttons justify-content-center'>
 					<Container>
-						<Row className="justify-content-center">
-							<FormGroup row>
-								<FormControlLabel control={
-									<Checkbox color="primary"
-										name="publicGame"
-										checked={this.state.publicGame}
-										onChange={this.handleCheck}
-										/>}
-									label="Public Game"
-								/>
-							</FormGroup>
+						<Row className="justify-content-center d-flex align-content-center">
+							<div className="public-game d-flex align-content-center">
+								<Switch 
+									checkedIcon={false}
+									uncheckedIcon={false}
+									height={20}
+									width={50}
+									onColor="#3498db"
+									offColor="#95a5a6"
+									onChange={this.handlePublicGame}
+									checked={this.state.publicGame}/>
+								<span>&nbsp;Public Game</span>
+							</div>
+							<div className="game-mode d-flex align-content-center">
+								<span><strong>Game Mode: </strong>Identify&nbsp;</span>
+								<Switch 
+									checkedIcon={false}
+									uncheckedIcon={false}
+									height={20}
+									width={50}
+									onColor="#3498db"
+									offColor="#3498db"
+									onChange={this.toggleGameMode}
+									checked={switchChecked}
+									disabled/>
+								<span>&nbsp;Creative</span>
+							</div>
 							<Button className='createGame'
 								placeholder="Create Game"
 								onClick={this.handleCreateGame}>Create Game</Button>
