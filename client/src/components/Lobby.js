@@ -12,6 +12,9 @@ import Chat from "./Chat";
 import IdentifyGameHelp from "./IdentifyGameHelp";
 import CreativeGameHelp from "./CreativeGameHelp";
 
+const capitalizeFirstLetter = (s) => {
+	return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 class Lobby extends Component {
 	constructor(props) {
@@ -23,6 +26,7 @@ class Lobby extends Component {
 			gameStarted: false,
 			gamePlayed: false,
 			chatCollapsed: false,
+			gameMode: ""
 		};
 		this.leaveLobby = this.leaveLobby.bind(this);
 		this.closeLobby = this.closeLobby.bind(this);
@@ -146,6 +150,8 @@ class Lobby extends Component {
 			      <Col className="pane lobby-info">
 			      	<span className="align-middle">
 			      	Lobby: {this.state.gameId}&nbsp;
+			      	<br />
+			      	Game Mode: {capitalizeFirstLetter(this.state.gameMode)}
 			      	<br />
 			      	{isHost && joinLinkComponent}
 			      	</span>

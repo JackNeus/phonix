@@ -20,10 +20,17 @@ const initChat = require("./chat");
 const Sound = require("./models/Sound");
 
 var gameSounds;
+var identifySoundCount = 0;
+var creativeSoundCount = 0;
 const getSoundsFromDB = () => {
 	Sound.find({}).then((data) => {
 		console.log("(Re)loading sounds...");
 		gameSounds = data;
+		for (let i in data) {
+			console.log(data[i]);
+			if (data[i].is_identify) identifySoundCount++;
+			if (data[i].is_creative) creativeSoundCount++;
+		}
 	});
 }
 getSoundsFromDB();
@@ -100,19 +107,20 @@ const POINTS_CORRECT_VOTE = 1;
 const POINTS_GOT_VOTE = 1;
 
 const getSound = (game) => {
-	// If we've run out of sounds, reset used dictionary.
-	if (game.usedSounds.size == gameSounds.length) {
-		game.usedSounds = new Set();
-	}
-
 	let isIdentify = game.gameMode === GAMEMODE_IDENTIFY;
 	let isCreative = game.gameMode === GAMEMODE_CREATIVE;
+
+	// If we've run out of sounds, reset used dictionary.
+	let setSize = isIdentify ? identifySoundCount : creativeSoundCount;
+	if (game.usedSounds.size == setSize) {
+		game.usedSounds = new Set();
+	}
 
 	var sound, correctMode;
 	do {
 		sound = gameSounds[Math.floor(Math.random() * gameSounds.length)];
 		correctMode = isIdentify && sound.is_identify || isCreative && sound.is_creative;
-	} while (correctMode && game.usedSounds.has(sound));
+	} while (!correctMode || game.usedSounds.has(sound));
 	game.usedSounds.add(sound);
 	return sound;
 }
@@ -192,7 +200,7 @@ io.on('connection', (socket) => {
 			public: data.public,
 			players: {},
 			round: 0,
-			gameMode: data.gameMode || GAMEMODE_IDENTIFY,
+			gameMode: data.gameMode,
 			usedSounds: new Set()
 		};
 		gameCollection.gameList[gameId].players[socket.uid] = {
@@ -420,14 +428,17 @@ io.on('connection', (socket) => {
 			game.phase = "GUESS";
 			game.sound = getSound(game);
 			game.votes = 0;
-			// Prepopulate guesses with correct answer.
-			game.guesses = [{
-				uid: -1,
-				username: "computer",
-				guess: game.sound.answer,
-				votes: 0,
-				correct: true,
-			}];
+			game.guesses = [];
+			if (game.gameMode === GAMEMODE_IDENTIFY) {
+				// Prepopulate guesses with correct answer.
+				game.guesses.push({
+					uid: -1,
+					username: "computer",
+					guess: game.sound.answer,
+					votes: 0,
+					correct: true,
+				});
+			}
 			game.timeoutStart = tsNow();
 			game.timeoutEnd = game.timeoutStart + TIMEOUT_GUESS * 1000;
 			sendGameUpdate(gameId);
@@ -436,7 +447,13 @@ io.on('connection', (socket) => {
 			let timeoutId = setTimeout(votePhase, calculateTimeout(game.timeoutEnd));
 
 			game.guessHandler = () => {
-				if (game.guesses.length == getActivePlayerCount(gameId) + 1) {
+				let requiredGuesses;
+				if (game.gameMode === GAMEMODE_IDENTIFY) {
+					requiredGuesses = getActivePlayerCount(gameId) + 1;
+				} else { // Creative mode
+					requiredGuesses = getActivePlayerCount(gameId);
+				}
+				if (game.guesses.length === requiredGuesses) {
 					clearTimeout(timeoutId);
 					// Everyone has guessed! Progress to vote phase.
 					votePhase();
@@ -472,22 +489,39 @@ io.on('connection', (socket) => {
 
 			// Scoring logic!
 			let guesses = game.guesses;
-			for (let i = 0; i < guesses.length; i++) {
+			for (let i in guesses) {
 				if (guesses[i].uid == -1) continue;
 
-				// Player's guess was straight up correct.
-				if (guessesMatch(guesses[i].guess, game.sound)) {
-					guesses[i].correct = true;
-					game.players[guesses[i].uid].score += POINTS_CORRECT_GUESS;
+				if (game.gameMode === GAMEMODE_IDENTIFY) {
+					// Player's guess was straight up correct.
+					if (guessesMatch(guesses[i].guess, game.sound)) {
+						guesses[i].correct = true;
+						game.players[guesses[i].uid].score += POINTS_CORRECT_GUESS;
+					}
 				}
 				// Player awarded points if other players vote for their guess.
 				game.players[guesses[i].uid].score += guesses[i].votes * POINTS_GOT_VOTE;
 			}
 
-			for (let uid in game.players) {
-				// Player voted for correct guess.
-				if (guessesMatch(game.players[uid].vote, game.sound)) {
-					game.players[uid].score += POINTS_CORRECT_VOTE;
+			// Purely cosmetic, but in creative mode mark the winning gusses(s) as "correct".
+			if (game.gameMode === GAMEMODE_CREATIVE) {
+				let maxVotes = -1;
+				for (let i in game.guesses) {
+					maxVotes = Math.max(game.guesses[i].votes, maxVotes);
+				}
+				for (let i in game.guesses) {
+					if (game.guesses[i].votes === maxVotes) {
+						game.guesses[i].correct = true;
+					}
+				}
+			}
+
+			if (game.gameMode === GAMEMODE_IDENTIFY) {
+				for (let uid in game.players) {
+					// Player voted for correct guess.
+					if (guessesMatch(game.players[uid].vote, game.sound)) {
+						game.players[uid].score += POINTS_CORRECT_VOTE;
+					}
 				}
 			}
 

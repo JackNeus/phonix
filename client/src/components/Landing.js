@@ -14,7 +14,7 @@ const defaultUsername = localStorage.setUsername === true ? localStorage.usernam
 
 const IDENTIFY_GAMEMODE = "identify";
 const CREATIVE_GAMEMODE = "creative";
-const CREATIVE_DISABLED = true;
+const CREATIVE_DISABLED = false;
 
 class Landing extends Component {
 	constructor(props) {
