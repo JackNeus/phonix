@@ -158,7 +158,8 @@ io.on('connection', (socket) => {
 				id: gameId,
 				host: game.hostUsername,
 				playerCount: getActivePlayerCount(gameId),
-				started: game.started
+				started: game.started,
+				gameMode: game.gameMode,
 			};
 		}).filter((game) => {
 			return games[game.id].public || requests && requests.indexOf(game.id) != -1;

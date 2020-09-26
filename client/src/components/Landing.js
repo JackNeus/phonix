@@ -6,6 +6,10 @@ import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 import socket from '../socket';
 
+const capitalizeFirstLetter = (s) => {
+	return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 const names = ["Craig", "Jeffrey", "Klaus", "Velma", "Oscar", "Thomas", "Lizzy"];
 const getRandomName = () => {
 	return names[Math.floor(Math.random() * names.length)];
@@ -206,6 +210,7 @@ class Landing extends Component {
 							<tr>
 								<th>Game Id</th>
 								<th>Host</th>
+								<th>Game Type</th>
 								<th>Player Count</th>
 								<th></th>
 							</tr>
@@ -223,6 +228,7 @@ class Landing extends Component {
 										onClick={() => {this.handleSelectGame(game)}}>
 										<td>{game.id}</td>
 										<td>{game.host}</td>
+										<td>{capitalizeFirstLetter(game.gameMode)}</td>
 										<td>{game.playerCount}</td>
 										<td>{game.started ? "In Progress" : "Open"}</td>
 									</tr>
