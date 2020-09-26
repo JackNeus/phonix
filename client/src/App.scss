@@ -46,6 +46,10 @@ body {
 		}
 	}
 
+	.help-icon {
+		cursor: pointer;
+	}
+
 	.game-list {
 		.disabled-row:hover {
 			background-color: $foreground-light;
@@ -139,6 +143,10 @@ body {
 			margin-left: 1em;
 			margin-right: 1em;
 			height: 2.5em;
+		}
+
+		.help-icon {
+			display: inline-block;	
 		}
 
 		.public-game {

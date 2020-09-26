@@ -9,6 +9,8 @@ import classnames from 'classnames';
 
 import Game from "./Game";
 import Chat from "./Chat";
+import IdentifyGameHelp from "./IdentifyGameHelp";
+import CreativeGameHelp from "./CreativeGameHelp";
 
 
 class Lobby extends Component {
@@ -31,7 +33,10 @@ class Lobby extends Component {
 		socket.emit("joinGame", this.state.gameId);
 
 		socket.on("joinSuccess", (data) => {
-			this.setState({host: data.host});
+			this.setState({
+				host: data.host,
+				gameMode: data.gameMode
+			});
 		})
 
 		socket.on("joinFailure", (err) => {
@@ -198,18 +203,8 @@ class Lobby extends Component {
 								placement='top'
 								overlay={
 									<Tooltip>
-										Hello!<br />
-										A round in Phonix consists of three phases:<br />
-										1. <strong>Identify</strong>. A sound will be played.
-										Submit your guess for what it is!<br />
-										2. <strong>Vote</strong>. The correct answer has been
-										shuffled in with players' guesses. Vote for what you think
-										is correct (or funniest)!<br />
-										3. <strong>Scoring</strong>. Receive <strong>+3</strong> points
-										for guessing the sound correctly. Receive <strong>+1</strong> points
-										for voting for the correct answer. And 
-										receive <strong>+1</strong> points for each 
-										player who votes for your guess!
+										{this.state.gameMode && (
+											this.state.gameMode === "identify" ? <IdentifyGameHelp /> : <CreativeGameHelp />)}
 									</Tooltip>
 								}
 							>

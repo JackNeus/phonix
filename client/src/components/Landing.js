@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, Button, Table } from 'react-bootstrap';
+import { Container, Row, Col, Button, Table, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import Switch from "react-switch";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 import socket from '../socket';
 
@@ -12,6 +14,7 @@ const defaultUsername = localStorage.setUsername === true ? localStorage.usernam
 
 const IDENTIFY_GAMEMODE = "identify";
 const CREATIVE_GAMEMODE = "creative";
+const CREATIVE_DISABLED = true;
 
 class Landing extends Component {
 	constructor(props) {
@@ -148,7 +151,23 @@ class Landing extends Component {
 								<span>&nbsp;Public Game</span>
 							</div>
 							<div className="game-mode d-flex align-content-center">
-								<span><strong>Game Mode: </strong>Identify&nbsp;</span>
+								<span><strong>Game Mode&nbsp;
+									<div className="help-icon">
+										<OverlayTrigger
+											key='help'
+											placement='bottom'
+											overlay={
+												<Tooltip>
+													In "Identify" mode, players compete to correctly identify sounds.<br />
+													In "Creative" mode, they're simply trying to come up with a guess that
+													will get the most votes from their fellow players -- think "Apples to Apples"!
+												</Tooltip>
+											}
+										>
+											<FontAwesomeIcon icon={faQuestionCircle}/>
+										</OverlayTrigger>
+									</div>
+								: </strong>Identify&nbsp;</span>
 								<Switch 
 									checkedIcon={false}
 									uncheckedIcon={false}
@@ -158,7 +177,7 @@ class Landing extends Component {
 									offColor="#3498db"
 									onChange={this.toggleGameMode}
 									checked={switchChecked}
-									disabled/>
+									disabled={CREATIVE_DISABLED}/>
 								<span>&nbsp;Creative</span>
 							</div>
 							<Button className='createGame'

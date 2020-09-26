@@ -224,9 +224,11 @@ io.on('connection', (socket) => {
 			// Join lobby channel.
 			socket.join(gameId);
 			// Send client a success message.
-			socket.emit("joinSuccess",
-				{gameId: gameId,
-				 host: game.host});
+			socket.emit("joinSuccess", {
+				gameId: gameId,
+				host: game.host,
+				gameMode: game.gameMode,
+			});
 			sendPlayerUpdate(gameId);
 
 			if (game.round > 0) { 
