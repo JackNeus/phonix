@@ -1,7 +1,7 @@
 const Validator = require("validator");
 const isEmpty = require("is-empty");
 
-const acceptedFiletypes = new Set(["wav", "mp3", "m4a", "ogg"]);
+const acceptedFiletypes = new Set(["wav", "mp3", "m4a", "ogg", "flac"]);
 
 module.exports = {
 	validateAddSound: function(data, files) {
